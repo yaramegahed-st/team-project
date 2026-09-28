@@ -41,18 +41,21 @@ This contract sets out shared expectations and commitments for how our team will
 
 * Based on your previous teamwork experiences, what other behaviours do you agree upon as a team?
     - some examples of possible additional team norms and expectations are included in the sample team contract in case your team needs some help getting ideas for what else you want to include.
-
+git h
 ---
 
 ## Decision Making
 
 * How will decisions about your team project be made? (Examples: By majority vote, by unanimous vote, etc.)
-
+  * Decisions will be headed by our team leader Yara and majority vote in case there are different views.
 ---
 ## Conflict resolution
 
 * How will your team resolve conflicts? (Example: by listening to each other's side of the issue and attempting to reach a compromise. By consulting a TA or instructor as a team, if a resolution has not yet been reached.)
-
+  * Each side must actively listen to the other side's perspective and try to understand first.
+  * Attempt to reach a compromise once everyone has a clear picture of all differing perspectives
+  * Escalate to TA for support if required
+  * If all else fails, as a team, go to instructor office hours for guidance
 ---
 
 ## Accountability
