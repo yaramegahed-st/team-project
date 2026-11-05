@@ -21,9 +21,6 @@ namely Anki) by accessing their text files through API and using them to generat
 flashcard application's style. Our application also includes a study mode so that users can track their 
 progress on each flashcard or deck.
 
-Optional TBD: Create a chatbot with API that can generate answers about the current flashcard if 
-prompted by the user.
-
 ### Domain
 [Education, Organization, Collaboration]
 
@@ -87,7 +84,12 @@ prompted by the user.
 
 Use Figma first to discuss and design GUI before finalization and implementation
 
+Create a chatbot with API that can generate answers about the current flashcard if
+prompted by the user.
+
 Create 3 databases as CSVs initially:
 - User Database
 - Card Database
 - Deck Database
+
+Multiple font packs for user choice
