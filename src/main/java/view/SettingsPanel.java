@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import view.style.*;
 import view.components.*;
+import interface_adapter.*;
 
 public class SettingsPanel extends JPanel {
     private static final double BASE_W = 651.0;
@@ -33,7 +34,7 @@ public class SettingsPanel extends JPanel {
         label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    public SettingsPanel(int width) {
+    public SettingsPanel(int width, ViewManagerModel viewManagerModel) {
         s = width / BASE_W;
         int height = sc(BASE_H);
 

@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.function.Consumer;
 import view.style.*;
 import view.components.*;
+import interface_adapter.*;
 
 public class NewDeckPanel extends JPanel {
     private static final double BASE_W = 651.0;
@@ -37,7 +38,7 @@ public class NewDeckPanel extends JPanel {
         label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    public NewDeckPanel(int width) {
+    public NewDeckPanel(int width, ViewManagerModel viewManagerModel) {
         s = width / BASE_W;
         int height = sc(BASE_H);
 

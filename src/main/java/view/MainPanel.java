@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import view.style.*;
 import view.components.*;
+import interface_adapter.*;
 
 public class MainPanel extends JPanel {
     private static final double BASE_W = 651.0;
@@ -61,7 +62,7 @@ public class MainPanel extends JPanel {
                 fm.getHeight() + 2 * pad);
     }
 
-    public MainPanel(int width) {
+    public MainPanel(int width, ViewManagerModel viewManagerModel) {
 
         s = width / BASE_W;
         int height = sc(BASE_H);

@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import view.style.*;
 import view.components.*;
+import interface_adapter.*;
 
 public class FreeAccessDecksPanel extends JPanel {
     private static final double BASE_W = 651.0;
@@ -69,7 +70,7 @@ public class FreeAccessDecksPanel extends JPanel {
         return (int) Math.round(v * s);
     }
 
-    public FreeAccessDecksPanel(int width) {
+    public FreeAccessDecksPanel(int width, ViewManagerModel viewManagerModel) {
         s = width / BASE_W;
         int height = sc(BASE_H);
 

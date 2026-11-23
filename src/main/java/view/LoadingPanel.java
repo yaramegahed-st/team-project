@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import view.style.*;
 import view.components.*;
+import interface_adapter.*;
 
 public class LoadingPanel extends JPanel {
     private static final int DURATION_MS = 1200;
@@ -22,7 +23,7 @@ public class LoadingPanel extends JPanel {
         return (int) Math.round(v * s);
     }
 
-    public LoadingPanel(int width) {              // pass the frame width
+    public LoadingPanel(int width, ViewManagerModel viewManagerModel) {              // pass the frame width
         s = width / BASE_W;
         int height = sc(BASE_H);
 

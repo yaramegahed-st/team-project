@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 import view.style.*;
 import view.components.*;
+import interface_adapter.*;
 
 public class FolderPanel extends JPanel {
     private static final double BASE_W = 651.0;
@@ -45,7 +46,7 @@ public class FolderPanel extends JPanel {
         label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    public FolderPanel(int width) {
+    public FolderPanel(int width, ViewManagerModel viewManagerModel) {
         s = width / BASE_W;
         int height = sc(BASE_H);
 

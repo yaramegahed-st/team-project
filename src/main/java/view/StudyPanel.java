@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.List;
 import view.style.*;
 import view.components.*;
+import interface_adapter.*;
 
 public class StudyPanel extends JPanel {
     private static final double BASE_W = 651.0;
@@ -34,7 +35,7 @@ public class StudyPanel extends JPanel {
         label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    public StudyPanel(int width) {
+    public StudyPanel(int width, ViewManagerModel viewManagerModel) {
         this.panelWidth = width;
         s = width / BASE_W;
         int height = sc(BASE_H);
