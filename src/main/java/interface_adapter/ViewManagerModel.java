@@ -38,4 +38,9 @@ public class ViewManagerModel {
             listener.viewChanged();
         }
     }
+
+    public void navigate(String name, boolean forward) {
+        setState(name, forward);
+        notifyViewChanged();
+    }
 }
