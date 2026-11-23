@@ -24,3 +24,5 @@ public class FontLoader {
         }
     }
 }
+
+//have to change the way loading happens if we were to create a jar file
