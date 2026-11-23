@@ -5,11 +5,11 @@ import entity.Card;
 import java.util.Optional;
 
 public class EditCardInteractor implements EditCardInputBoundary{
-    private final EditCardDataAccessInterface dataAccess;
+    private final EditCardDataAccessInterface dataAccessInterface;
     private final EditCardOutputBoundary presenter;
 
-    public EditCardInteractor(EditCardDataAccessInterface dataAccess, EditCardOutputBoundary presenter) {
-        this.dataAccess = dataAccess;
+    public EditCardInteractor(EditCardDataAccessInterface dataAccessInterface, EditCardOutputBoundary presenter) {
+        this.dataAccessInterface = dataAccessInterface;
         this.presenter = presenter;
     }
 
@@ -18,12 +18,12 @@ public class EditCardInteractor implements EditCardInputBoundary{
         Card updatedCard;
 
         try {
-            if (!dataAccess.deckExists((inputData.getDeckId()))) {
+            if (!dataAccessInterface.deckExists((inputData.getDeckId()))) {
                 presenter.prepareFailView("Deck does not exist");
                 return;
             }
 
-            Optional<Card> existingCard = dataAccess.findCard(inputData.getDeckId(), inputData.getCardId());
+            Optional<Card> existingCard = dataAccessInterface.findCard(inputData.getDeckId(), inputData.getCardId());
 
             if (existingCard.isEmpty()) {
                 presenter.prepareFailView("Card does not exist in this deck");
@@ -40,7 +40,7 @@ public class EditCardInteractor implements EditCardInputBoundary{
                 return;
             }
 
-            dataAccess.updateCard(inputData.getDeckId(), updatedCard);
+            dataAccessInterface.updateCard(inputData.getDeckId(), updatedCard);
 
         } catch (EditCardDataAccessException exception) {
             presenter.prepareFailView("Unable to update card");

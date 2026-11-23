@@ -1,5 +1,6 @@
 # Team Contract
-
+Tutorial 0201 [Group 02]\
+BA2200 Monday 1pm-3pm
 ---
 ## Purpose of this Contract
 
@@ -29,19 +30,19 @@ This contract sets out shared expectations and commitments for how our team will
   
 ---
 
-### [Other Categories of norms and expectations go here]
+### [Other Categories of norms and expectations]
 
 * The team will have weekly team recap meets on Friday afternoons between 3-4pm, either virtually or in person.
 ---
 
 ## Decision Making
 
-* How will decisions about your team project be made? (Examples: By majority vote, by unanimous vote, etc.)
+* How will decisions about your team project be made?
   * Decisions will be headed by our team leader Yara and majority vote in case there are different views.
 ---
 ## Conflict resolution
 
-* How will your team resolve conflicts? (Example: by listening to each other's side of the issue and attempting to reach a compromise. By consulting a TA or instructor as a team, if a resolution has not yet been reached.)
+* How will your team resolve conflicts? 
   * Each side must actively listen to the other side's perspective and try to understand first.
   * Attempt to reach a compromise once everyone has a clear picture of all differing perspectives
   * Escalate to TA for support if required

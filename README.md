@@ -1,6 +1,6 @@
 # Team CYEK Project
 
-# Project Name - Flashcard? 
+# Project Name - Shareable Flashcards
 ## Team Information
 ### Team Members
 - Charles Shen
@@ -68,27 +68,48 @@ study decks I have on my computer/so I can study decks that other people have cr
 
 ---
 
-## Use Cases
-### Use Case 1
-### Use Case 2
-### Use Case 3
-(Add additional use cases as needed.)
+## Use Cases - add as we go
+### 
+add_card\
+add_deck\
+ask_assistant\
+change_password\
+edit_card\
+edit_deck\
+export_deck\
+import_deck\
+login\
+logout\
+signup\
+start_study\
 
 ---
 
 ## Minimal Viable Product (MVP)
 | Team Member | MVP Use Case |
 |-------------|--------------|
-| Name | Use Case |
-| Name | Use Case |
-| Name | Use Case |
+| Ellie | Login and Logout  |
+| Charles | Data persistence, Database  |
+| Yara | Presenters and Interface  |
+| Kobi | Add/Remove/Edit Card  |
 
 ---
 
 ## Entities
-### Entity 1
-### Entity 2
-(Add additional entities as needed.)
+### 
+AccessRole
+### 
+Card
+### 
+Deck
+### 
+DeckAccess
+### 
+StudySession
+### 
+User
+### 
+UserFactory
 
 ---
 
@@ -109,7 +130,11 @@ study decks I have on my computer/so I can study decks that other people have cr
 ---
 
 ## How to Run
-[Instructions for running the program.]
+Run the Main.java.\
+Login or signup with a new account\
+Start exploring public decks or creating your own.\
+Create and organize your own flash cards.\
+Share your decks with friends.
 
 ---
 
