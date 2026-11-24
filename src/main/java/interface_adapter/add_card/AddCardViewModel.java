@@ -23,7 +23,7 @@ public class AddCardViewModel {
         this.message = message;
         this.error = "";
 
-        support.firePropertyChange("success cardAdded", null, null);
+        support.firePropertyChange(CARD_ADDED, null, null);
     }
 
     public void setError(String error){
