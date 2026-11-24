@@ -17,7 +17,9 @@ public class AddDeckOutputData {
     return this.deckId;
   }
 
-  public String getName() { return this.deckName; }
+  public String getName() {
+    return this.deckName;
+  }
 
   public String getOwner() {
     return this.owner;

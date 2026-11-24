@@ -1,24 +1,57 @@
 package use_case.add_deck;
 
 import entity.Deck;
+import use_case.session.CurrentUserAccess;
 
 public class AddDeckInteractor implements AddDeckInputBoundary {
   private final AddDeckDataAccessInterface dataAccess;
   private final AddDeckOutputBoundary presenter;
+  private final CurrentUserAccess currentUserAccess;
 
-  public AddDeckInteractor(AddDeckDataAccessInterface dataAccess, AddDeckOutputBoundary presenter) {
+  public AddDeckInteractor( 
+      AddDeckDataAccessInterface dataAccess,
+      AddDeckOutputBoundary presenter, 
+      CurrentUserAccess currentUserAccess
+                          ) {
     this.dataAccess = dataAccess;
     this.presenter = presenter;
+    this.currentUserAccess = currentUserAccess;
   }
 
   @Override
   public void execute(AddDeckInputData inputData) {
-    // create the new deck here
-  }
+    String owner = currentUserAccess.getCurrentUser();
+
+    if (owner == null || owner.isEmpty()) {
+      presenter.prepareFailView("Please sign in before creating a deck.");
+      return;
+      }
 
   // save our new deck if valid
-  // dataAccess.saveDeck(inputData.
+  Deck deck;
 
-  // notify presenter new deck was updated]=
-  // presenter.prepareSuccessView(outputData);
+  try {
+    int deckId = dataAccess.generateDeckId();
+
+  // notify presenter new deck was un sucessful
+    try { 
+      deck = new Deck(deckId, inputData.getDeckName(), owner);
+      } catch (IllegalArgumentException exception) {
+        presenter.prepareFailView("Error creating deck: " + exception.getMessage());
+        return;
+      }
+
+    data Access.saveDeck(deck);
+  } catch (AddDeckDataAccessException exception) {
+      presenter.prepareFailView("Unable to save deck, please try again later.");
+      return;
+    }
+  // notify presenter new deck was updated
+
+  presenter.prepareSuccessView(new AddDeckOutputData(
+      deck.getDeckId(), 
+      deck.getDeckName(), 
+      deck.getOwner()
+      ));
+  }
 }

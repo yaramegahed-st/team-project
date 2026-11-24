@@ -1,6 +1,8 @@
 package app;
 
 import data_access.FileUserDataAccessObject;
+import data_access.InMemoryUserDataAccessObject;
+import data_access.UserDataAccessObject;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.about.AboutViewModel;
@@ -54,6 +56,7 @@ import view.TemporaryWiring;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class AppBuilder {
     private static final int W = 1000, H = 605;
@@ -77,6 +80,8 @@ public class AppBuilder {
     private LoggedInView loggedInView;
     private LoggedInViewModel loggedInViewModel;
     private AccountsView accountsView;
+    private AddDeckView addDeckView;
+    private AddDeckViewModel addDeckViewModel;
 
     private LoadingPanel loadingPanel;
     private MainPanel mainPanel;
@@ -171,6 +176,14 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addAddDeckView() {
+        addDeckViewModel = new AddDeckViewModel();
+        addDeckView = new AddDeckView(addDeckViewModel);
+
+        cardPanel.add(addDeckView, AddDeckViewModel.VIEW_NAME);
+        return this;
+    }
+
     /** TEMPORARY: connects features that are not use cases yet. Remove as each one becomes a use case. */
     public AppBuilder addTemporaryWiring() {
         new TemporaryWiring(W, viewManagerModel, viewManager, newDeckViewModel,
@@ -209,6 +222,32 @@ public class AppBuilder {
 
         ChangePasswordController changePasswordController = new ChangePasswordController(changePasswordInteractor);
         loggedInView.setChangePasswordController(changePasswordController);
+        return this;
+    }
+
+    public AppBuilder addAddDeckUseCase() {
+        if (addDeckView == null) {
+            throw new IllegalStateException(
+                    "Call addAddDeckView() before addAddDeckUseCase()."
+            );
+        }
+
+        AddDeckOutputBoundary presenter =
+                new AddDeckPresenter(addDeckViewModel);
+
+        CurrentUserAccess currentUserAccess =
+                userDataAccessObject::getCurrentUsername;
+
+        AddDeckInputBoundary interactor = new AddDeckInteractor(
+                deckRepository,
+                presenter,
+                currentUserAccess
+        );
+
+        addDeckView.setAddDeckController(
+                new AddDeckController(interactor)
+        );
+
         return this;
     }
 

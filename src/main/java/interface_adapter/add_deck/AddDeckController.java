@@ -1,6 +1,5 @@
 package interface_adapter.add_deck;
 
-import use_case.add_card.AddCardInputData;
 import use_case.add_deck.AddDeckInputBoundary;
 import use_case.add_deck.AddDeckInputData;
 

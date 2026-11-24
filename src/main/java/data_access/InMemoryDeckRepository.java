@@ -5,16 +5,24 @@ import entity.Deck;
 import use_case.add_card.AddCardDataAccessInterface;
 import use_case.edit_card.EditCardDataAccessInterface;
 import use_case.edit_card.EditCardDataAccessException;
+import use_case.add_deck.AddDeckDataAccessInterface;
+import use_case.add_deck.AddDeckDataAccessInterfaceException;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
-public class InMemoryDeckRepository implements AddCardDataAccessInterface, EditCardDataAccessInterface {
+public class InMemoryDeckRepository 
+    implements 
+    AddCardDataAccessInterface, 
+    EditCardDataAccessInterface, 
+    AddDeckDataAccessInterface 
+    {
 
     private final Map<Integer, Deck> decks = new HashMap<>();
     private int nextCardId = 1;
+    private int nextDeckId = 1;
 
     public InMemoryDeckRepository(List<Deck> initialDecks) {
         for (Deck deck : initialDecks) {
@@ -24,6 +32,7 @@ public class InMemoryDeckRepository implements AddCardDataAccessInterface, EditC
 
             for (Card card : deck.getCards()) {
                 nextCardId = Math.max(nextCardId, card.getId() + 1);
+                nextDeckId = Math.max(nextDeckId, deck.getId() + 1);
             }
         }
     }
@@ -31,6 +40,20 @@ public class InMemoryDeckRepository implements AddCardDataAccessInterface, EditC
     @Override
     public boolean deckExists(int deckId) {
         return decks.containsKey(deckId);
+    }
+
+    @Override
+    public int generateDeckId() {
+        return nextDeckId++;
+    }
+
+    @Override
+    public void saveDeck(Deck deck) {
+        if (decks.containsKey(deck.getId())) {
+            throw new AddDeckDataAccessInterfaceException(
+                "id " + deck.getId() + " already exists");
+        }
+        decks.put(deck.getId(), deck);
     }
 
     @Override
