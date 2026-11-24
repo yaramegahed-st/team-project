@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import view.style.Theme;
@@ -16,6 +17,9 @@ public class TileButton extends JComponent {
     public void setText(String t)      { this.text = t; repaint(); }
     public String getAccess()          { return access; }
     public void setAccess(String a)    { this.access = a; }
+
+    private static final double MAX_TEXT_FRACTION = 0.84;   // widest the title may be, as a fraction of the tile width
+    private static final float MIN_SCALE = 0.35f;           // the title never shrinks below this fraction of its normal size
 
     private final Font font;
     private final float strokeWidth;
@@ -71,13 +75,30 @@ public class TileButton extends JComponent {
             g2.fillOval(dx, dy + i * (int) (d * 2.2), d, d);
         }
 
-        // outlined label, centered (a little below the middle)
-        TextLayout tl = new TextLayout(text, font, g2.getFontRenderContext());
+        // outlined label, centered (a little below the middle).
+        // A title that is too wide for the tile gets a smaller font; if it would still not fit at the
+        // smallest allowed size, it is cut off with "..." and the full name is shown as a tooltip.
+        FontRenderContext frc = g2.getFontRenderContext();
+        float maxWidth = (float) (w * MAX_TEXT_FRACTION);
+        Font titleFont = font;
+        float titleStroke = strokeWidth;
+        String shown = text;
+
+        TextLayout tl = new TextLayout(shown, titleFont, frc);
+        if (tl.getAdvance() > maxWidth) {
+            float scale = Math.max(MIN_SCALE, maxWidth / tl.getAdvance());
+            titleFont = font.deriveFont(font.getSize2D() * scale);
+            titleStroke = strokeWidth * scale;                    // keep the outline in proportion to the text
+            shown = fitWithEllipsis(text, titleFont, frc, maxWidth);
+            tl = new TextLayout(shown, titleFont, frc);
+        }
+        setToolTipText(shown.equals(text) ? null : text);
+
         float tx = (w - tl.getAdvance()) / 2f;
         float ty = h * 0.55f + (tl.getAscent() - tl.getDescent()) / 2f;
         Shape outline = tl.getOutline(AffineTransform.getTranslateInstance(tx, ty));
 
-        g2.setStroke(new BasicStroke(strokeWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.setStroke(new BasicStroke(titleStroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.setColor(Color.BLACK);
         g2.draw(outline);
         g2.setColor(Color.decode("#B5FFFF"));
@@ -92,5 +113,17 @@ public class TileButton extends JComponent {
         }
 
         g2.dispose();
+    }
+
+    /** Returns s if it fits in maxWidth, otherwise the longest start of s that fits once "..." is added. */
+    private static String fitWithEllipsis(String s, Font f, FontRenderContext frc, float maxWidth) {
+        if (new TextLayout(s, f, frc).getAdvance() <= maxWidth) return s;
+        String cut = s;
+        while (cut.length() > 1) {
+            cut = cut.substring(0, cut.length() - 1);
+            String candidate = cut.stripTrailing() + "...";
+            if (new TextLayout(candidate, f, frc).getAdvance() <= maxWidth) return candidate;
+        }
+        return "...";
     }
 }
