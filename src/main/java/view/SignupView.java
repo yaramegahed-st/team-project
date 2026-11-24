@@ -1,5 +1,7 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
+import interface_adapter.accounts.AccountsViewModel;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupState;
 import interface_adapter.signup.SignupViewModel;
@@ -18,6 +20,7 @@ import java.awt.event.ActionListener;
 public class SignupView extends JPanel implements ActionListener, SignupViewModelListener {
 
     private final SignupViewModel signupViewModel;
+    private final ViewManagerModel viewManagerModel;
     private final JTextField usernameInputField = new JTextField(15);
     private final JPasswordField passwordInputField = new JPasswordField(15);
     private final JPasswordField repeatPasswordInputField = new JPasswordField(15);
@@ -27,8 +30,9 @@ public class SignupView extends JPanel implements ActionListener, SignupViewMode
     private final JButton cancel;
     private final JButton toLogin;
 
-    public SignupView(SignupViewModel signupViewModel) {
+    public SignupView(SignupViewModel signupViewModel, ViewManagerModel viewManagerModel) {
         this.signupViewModel = signupViewModel;
+        this.viewManagerModel = viewManagerModel;
         signupViewModel.addListener(this);
 
         final JLabel title = new JLabel(SignupViewModel.TITLE_LABEL);
@@ -169,7 +173,8 @@ public class SignupView extends JPanel implements ActionListener, SignupViewMode
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        JOptionPane.showMessageDialog(this, "Cancel not implemented yet.");
+        // Cancel: go back to the Accounts screen (sliding back, not forward)
+        viewManagerModel.navigate(AccountsViewModel.VIEW_NAME, false);
     }
 
     @Override

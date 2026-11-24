@@ -1,7 +1,7 @@
 package view;
 
 import interface_adapter.ViewManagerModel;
-import interface_adapter.home.HomeViewModel;
+import interface_adapter.accounts.AccountsViewModel;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginState;
 import interface_adapter.login.LoginViewModel;
@@ -131,8 +131,8 @@ public class LoginView extends JPanel implements ActionListener, LoginViewModelL
      */
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource().equals(cancel)) {
-            viewManagerModel.setState(HomeViewModel.VIEW_NAME);
-            viewManagerModel.notifyViewChanged();
+            // Cancel: go back to the Accounts screen (sliding back, not forward)
+            viewManagerModel.navigate(AccountsViewModel.VIEW_NAME, false);
         }
     }
 
