@@ -99,14 +99,14 @@ public class AppBuilder {
 
     public AppBuilder addSignupView() {
         signupViewModel = new SignupViewModel();
-        signupView = new SignupView(signupViewModel);
+        signupView = new SignupView(signupViewModel, viewManagerModel);
         viewManager.register(SignupViewModel.VIEW_NAME, signupView);
         return this;
     }
 
     public AppBuilder addLoginView() {
         loginViewModel = new LoginViewModel();
-        loginView = new LoginView(loginViewModel);
+        loginView = new LoginView(loginViewModel, viewManagerModel);
         viewManager.register(LoginViewModel.VIEW_NAME, loginView);
         return this;
     }
