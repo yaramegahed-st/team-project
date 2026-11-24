@@ -58,7 +58,7 @@ public class NewDeckPanel extends JPanel {
         styleAndFit(titleFlash, 0.9, f1, 2, 3);
         titleFlash.setLocation(0, 0);
         LabelHoverZoom.attach(titleFlash, f1, (float) (0.9 * s), sc(2), sc(3), sc(8), 1.08,
-                () -> viewManagerModel.navigate(newDeckViewModel.getOriginView(), false));
+                () -> viewManagerModel.navigate(newDeckViewModel.getState().getOriginView(), false));
 
         // --- Settings button (top-right) ---
         int iconSize = settingsSlot - sc(6);

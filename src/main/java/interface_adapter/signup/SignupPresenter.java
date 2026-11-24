@@ -1,6 +1,7 @@
 package interface_adapter.signup;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.home.HomeViewModel;
 import interface_adapter.login.LoginState;
 import interface_adapter.login.LoginViewModel;
 import use_case.signup.SignupOutputBoundary;
@@ -25,13 +26,12 @@ public class SignupPresenter implements SignupOutputBoundary {
 
     @Override
     public void prepareSuccessView(SignupOutputData response) {
-        // On success, switch to the login view.
+        // On success, go straight to the main panel.
         final LoginState loginState = loginViewModel.getState();
         loginState.setUsername(response.getUsername());
         loginViewModel.notifyStateChanged();
 
-        viewManagerModel.setState(LoginViewModel.VIEW_NAME);
-        viewManagerModel.notifyViewChanged();
+        viewManagerModel.navigate(HomeViewModel.VIEW_NAME, true);
     }
 
     @Override

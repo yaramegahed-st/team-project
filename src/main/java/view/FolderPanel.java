@@ -121,7 +121,7 @@ public class FolderPanel extends JPanel {
         int ey = (plus.getHeight() - plusH) / 2;
         plus.setLocation(boxW - sc(8) - plusW - ex, boxH - sc(8) - plusH - ey);
         plus.addActionListener(e -> {
-            newDeckViewModel.setOriginView(viewName);                  // so New Deck returns here
+            newDeckViewModel.getState().setOriginView(viewName);                  // so New Deck returns here
             viewManagerModel.navigate(NewDeckViewModel.VIEW_NAME, true);
         });
         box.add(plus);

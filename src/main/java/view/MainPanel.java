@@ -3,7 +3,7 @@ package view;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.about.AboutViewModel;
 import interface_adapter.chatbot.ChatbotViewModel;
-import interface_adapter.free_access.FreeAccessViewModel;
+import interface_adapter.free_access_decks.FreeAccessViewModel;
 import interface_adapter.home.HomeViewModel;
 import interface_adapter.new_deck.NewDeckViewModel;
 import interface_adapter.settings.SettingsViewModel;
@@ -270,7 +270,7 @@ public class MainPanel extends JPanel {
 
         JMenuItem newDeck = new JMenuItem("Add new deck");
         newDeck.addActionListener(e -> {
-            newDeckViewModel.setOriginView(HomeViewModel.VIEW_NAME);     // so New Deck returns here
+            newDeckViewModel.getState().setOriginView(HomeViewModel.VIEW_NAME);     // so New Deck returns here
             viewManagerModel.navigate(NewDeckViewModel.VIEW_NAME, true);
         });
         menu.add(newDeck);

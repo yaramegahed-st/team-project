@@ -50,6 +50,7 @@ public class SlidingViewManager implements ViewManagerModelListener {
         if (current == null) {                        // first view: no animation
             next.setBounds(0, 0, w, h);
             container.add(next);
+            next.validate();                          // lay out the view's children now (they were never laid out)
             container.revalidate();
             container.repaint();
             current = next;
@@ -67,6 +68,7 @@ public class SlidingViewManager implements ViewManagerModelListener {
 
         next.setBounds(dir * w, 0, w, h);             // start just off-screen
         container.add(next);
+        next.validate();                              // views using a layout manager would otherwise stay empty
 
         javax.swing.Timer timer = new javax.swing.Timer(TICK_MS, null);
         timer.addActionListener(e -> {

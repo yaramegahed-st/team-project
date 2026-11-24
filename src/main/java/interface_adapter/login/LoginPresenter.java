@@ -1,6 +1,7 @@
 package interface_adapter.login;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.home.HomeViewModel;
 import interface_adapter.logged_in.LoggedInState;
 import interface_adapter.logged_in.LoggedInViewModel;
 import use_case.login.LoginOutputBoundary;
@@ -34,9 +35,8 @@ public class LoginPresenter implements LoginOutputBoundary {
         this.loginViewModel.setState(new LoginState());
         this.loginViewModel.notifyStateChanged();
 
-        // switch to the logged in view
-        this.viewManagerModel.setState(LoggedInViewModel.VIEW_NAME);
-        this.viewManagerModel.notifyViewChanged();
+        // switch to the main panel
+        this.viewManagerModel.navigate(HomeViewModel.VIEW_NAME, true);
     }
 
     @Override
