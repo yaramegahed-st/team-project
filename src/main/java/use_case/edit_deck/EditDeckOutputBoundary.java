@@ -1,4 +1,6 @@
 package use_case.edit_deck;
 
-public class EditDeckOutputBoundary {
+public interface EditDeckOutputBoundary {
+    void prepareSuccessView(EditDeckOutputData outputData);
+    void prepareFailureView(String errorMessage);
 }

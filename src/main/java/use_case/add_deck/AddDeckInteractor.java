@@ -20,10 +20,10 @@ public class AddDeckInteractor implements AddDeckInputBoundary {
 
   @Override
   public void execute(AddDeckInputData inputData) {
-    String owner = currentUserAccess.getCurrentUser();
+    String owner = currentUserAccess.getCurrentUserName();
 
     if (owner == null || owner.isEmpty()) {
-      presenter.prepareFailView("Please sign in before creating a deck.");
+      presenter.prepareFailureView("Please sign in before creating a deck.");
       return;
       }
 
@@ -37,20 +37,20 @@ public class AddDeckInteractor implements AddDeckInputBoundary {
     try { 
       deck = new Deck(deckId, inputData.getDeckName(), owner);
       } catch (IllegalArgumentException exception) {
-        presenter.prepareFailView("Error creating deck: " + exception.getMessage());
+        presenter.prepareFailureView("Error creating deck: " + exception.getMessage());
         return;
       }
 
-    data Access.saveDeck(deck);
-  } catch (AddDeckDataAccessException exception) {
-      presenter.prepareFailView("Unable to save deck, please try again later.");
+    dataAccess.saveDeck(deck);
+  } catch (AddDeckDataAccessInterfaceException exception) {
+      presenter.prepareFailureView("Unable to save deck, please try again later.");
       return;
     }
   // notify presenter new deck was updated
 
   presenter.prepareSuccessView(new AddDeckOutputData(
-      deck.getDeckId(), 
-      deck.getDeckName(), 
+      deck.getId(), 
+      deck.getName(), 
       deck.getOwner()
       ));
   }

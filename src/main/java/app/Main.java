@@ -6,6 +6,7 @@ public class Main {
     public static void main(String[] args) {
         AppBuilder appBuilder = new AppBuilder();
         JFrame application = appBuilder
+                // The Views
                 .addAccountsView()
                 .addSignupView()
                 .addLoginView()
@@ -19,11 +20,21 @@ public class Main {
                 .addFreeAccessView()
                 .addNewDeckView()
                 .addStudyView()
+                .addAddDeckView()
+
+                // Temporary wiring for testing
                 .addTemporaryWiring()
+
+                // The Use Cases
                 .addSignupUseCase()
                 .addLoginUseCase()
                 .addChangePasswordUseCase()
                 .addLogoutUseCase()
+                .addAddDeckUseCase()
+                .addEditDeckFeature()
+                .addEditCardFeature()
+                
+
                 .build();
 
         application.pack();

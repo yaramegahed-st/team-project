@@ -8,10 +8,8 @@ public class AddDeckController {
 
   public AddDeckController(AddDeckInputBoundary interactor) { this.interactor = interactor; }
 
-  public void execute(int deckId, String name, String owner) {
-    AddDeckInputData inputData = new AddDeckInputData(deckId, name, owner);
-
-    interactor.execute(inputData);
+  public void execute(String name) {
+    interactor.execute(new AddDeckInputData(name));
   }
 }
 

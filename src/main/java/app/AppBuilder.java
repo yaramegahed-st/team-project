@@ -2,12 +2,23 @@ package app;
 
 import data_access.FileUserDataAccessObject;
 import data_access.InMemoryUserDataAccessObject;
-import data_access.UserDataAccessObject;
+import data_access.InMemoryDeckRepository;
+
 import entity.UserFactory;
+
 import interface_adapter.ViewManagerModel;
 import interface_adapter.about.AboutViewModel;
 import interface_adapter.accounts.AccountsViewModel;
+import interface_adapter.add_deck.AddDeckViewModel;
+import interface_adapter.add_deck.AddDeckPresenter;
+import interface_adapter.add_deck.AddDeckController;
 import interface_adapter.chatbot.ChatbotViewModel;
+import interface_adapter.edit_card.EditCardController;
+import interface_adapter.edit_card.EditCardPresenter;
+import interface_adapter.edit_card.EditCardViewModel;
+import interface_adapter.edit_deck.EditDeckViewModel;
+import interface_adapter.edit_deck.EditDeckPresenter;
+import interface_adapter.edit_deck.EditDeckController;
 import interface_adapter.free_access_decks.FreeAccessViewModel;
 import interface_adapter.home.HomeViewModel;
 import interface_adapter.loading.LoadingViewModel;
@@ -26,9 +37,12 @@ import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
 import interface_adapter.study.StudyViewModel;
+
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
 import use_case.change_password.ChangePasswordOutputBoundary;
+import use_case.edit_card.EditCardInputBoundary;
+import use_case.edit_card.EditCardInteractor;
 import use_case.login.LoginInputBoundary;
 import use_case.login.LoginInteractor;
 import use_case.login.LoginOutputBoundary;
@@ -38,9 +52,20 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
+import use_case.add_deck.AddDeckInputBoundary;
+import use_case.add_deck.AddDeckInteractor;
+import use_case.add_deck.AddDeckOutputBoundary;
+import use_case.edit_deck.EditDeckInputBoundary;
+import use_case.edit_deck.EditDeckInteractor;
+import use_case.edit_deck.EditDeckOutputBoundary;
+import use_case.session.CurrentUserAccess;
+
 import view.AboutPanel;
 import view.AccountsView;
 import view.ChatbotPanel;
+import view.AddDeckView;
+import view.EditCardView;
+import view.EditDeckView;
 import view.FreeAccessDecksPanel;
 import view.LoadingPanel;
 import view.LoggedInView;
@@ -82,6 +107,10 @@ public class AppBuilder {
     private AccountsView accountsView;
     private AddDeckView addDeckView;
     private AddDeckViewModel addDeckViewModel;
+    private EditDeckView editDeckView;
+    private EditDeckViewModel editDeckViewModel;
+    private EditCardView editCardView;
+    private EditCardViewModel editCardViewModel;
 
     private LoadingPanel loadingPanel;
     private MainPanel mainPanel;
@@ -89,6 +118,8 @@ public class AppBuilder {
     private NewDeckPanel newDeckPanel;
     private ChatbotPanel chatbotPanel;
     private StudyPanel studyPanel;
+
+    private final InMemoryDeckRepository deckRepository = new InMemoryDeckRepository(List.of());
 
     public AppBuilder() {
         container.setPreferredSize(new Dimension(W, H));
@@ -184,6 +215,31 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addEditCardFeature() {
+        editCardViewModel = new EditCardViewModel();
+
+        EditCardPresenter presenter =
+            new EditCardPresenter(editCardViewModel);
+
+        EditCardInputBoundary interactor =
+            new EditCardInteractor(deckRepository, presenter);
+
+        EditCardController controller =
+            new EditCardController(interactor);
+
+        editCardView = new EditCardView(
+            controller,
+            editCardViewModel
+        );
+
+        viewManager.register(
+            EditCardViewModel.VIEW_NAME,
+            editCardView
+        );
+
+        return this;
+    }
+
     /** TEMPORARY: connects features that are not use cases yet. Remove as each one becomes a use case. */
     public AppBuilder addTemporaryWiring() {
         new TemporaryWiring(W, viewManagerModel, viewManager, newDeckViewModel,
@@ -246,6 +302,34 @@ public class AppBuilder {
 
         addDeckView.setAddDeckController(
                 new AddDeckController(interactor)
+        );
+
+        return this;
+    }
+
+    public AppBuilder addEditDeckFeature() {
+        EditDeckViewModel viewModel = new EditDeckViewModel();
+
+        EditDeckOutputBoundary presenter =
+                new EditDeckPresenter(viewModel);
+
+        CurrentUserAccess session =
+                userDataAccessObject::getCurrentUsername;
+
+        EditDeckInputBoundary interactor = new EditDeckInteractor(
+                deckRepository,
+                presenter,
+                session
+        );
+
+        EditDeckController controller =
+                new EditDeckController(interactor);
+
+        editDeckView = new EditDeckView(controller, viewModel);
+
+        viewManager.register(
+                EditDeckViewModel.VIEW_NAME,
+                editDeckView
         );
 
         return this;

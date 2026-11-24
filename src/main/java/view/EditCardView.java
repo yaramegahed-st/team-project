@@ -12,22 +12,19 @@ public class EditCardView extends JPanel {
     private final JTextField questionField = new JTextField();
     private final JTextField answerField = new JTextField();
     private final JLabel resultLabel = new JLabel(" ");
+    private final JButton saveButton = new JButton("Save changes");
+
+    private Integer selectedDeckId;
+    private Integer selectedCardId;
 
     private final EditCardViewModel viewModel;
     private final PropertyChangeListener listener = this::displayResult;
 
     public EditCardView(EditCardController controller,
-                        EditCardViewModel viewModel,
-                        int deckId, int cardId,
-                        String initialQuestion, String initialAnswer) {
+                        EditCardViewModel viewModel) {
         this.viewModel = viewModel;
 
         setLayout(new GridLayout(0, 1, 8, 8));
-
-        questionField.setText(initialQuestion);
-        answerField.setText(initialAnswer);
-
-        JButton saveButton = new JButton("Save changes");
 
         add(new JLabel("Question"));
         add(questionField);
@@ -36,16 +33,35 @@ public class EditCardView extends JPanel {
         add(saveButton);
         add(resultLabel);
 
-        saveButton.addActionListener(event ->
-                controller.execute(
-                        deckId,
-                        cardId,
-                        questionField.getText(),
-                        answerField.getText()
-                )
-        );
+        // Enable saving after a card has been selected.
+        saveButton.setEnabled(false);
+
+        saveButton.addActionListener(event -> {
+            if (selectedDeckId == null || selectedCardId == null) {
+                resultLabel.setText("Please select a card first.");
+                return;
+            }
+
+            controller.execute(
+              selectedDeckId,
+              selectedCardId,
+              questionField.getText(),
+              answerField.getText()
+            );
+        });
 
         viewModel.addPropertyChangeListener(listener);
+    }
+
+    public void openCard(int deckId, int cardId,
+                         String question, String answer) {
+        selectedDeckId = deckId;
+        selectedCardId = cardId;
+
+        questionField.setText(question);
+        answerField.setText(answer);
+        resultLabel.setText(" ");
+        saveButton.setEnabled(true);
     }
 
     private void displayResult(PropertyChangeEvent event) {

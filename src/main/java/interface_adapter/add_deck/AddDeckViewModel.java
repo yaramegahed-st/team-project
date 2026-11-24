@@ -4,9 +4,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 public class AddDeckViewModel {
-  private static final String VIEW_NAME = "addDeck";
-  private static final String DECK_ADDED = "deckAdded";
-  private static final String ERROR = "error";
+  public static final String VIEW_NAME = "addDeck";
+  public static final String DECK_ADDED = "deckAdded";
+  public static final String ERROR = "error";
 
   private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 

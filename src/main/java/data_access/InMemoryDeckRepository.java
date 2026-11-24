@@ -7,6 +7,8 @@ import use_case.edit_card.EditCardDataAccessInterface;
 import use_case.edit_card.EditCardDataAccessException;
 import use_case.add_deck.AddDeckDataAccessInterface;
 import use_case.add_deck.AddDeckDataAccessInterfaceException;
+import use_case.edit_deck.EditDeckDataAccessInterface;
+import use_case.edit_deck.EditDeckDataAccessException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +19,8 @@ public class InMemoryDeckRepository
     implements 
     AddCardDataAccessInterface, 
     EditCardDataAccessInterface, 
-    AddDeckDataAccessInterface 
+    AddDeckDataAccessInterface,
+    EditDeckDataAccessInterface
     {
 
     private final Map<Integer, Deck> decks = new HashMap<>();
@@ -55,6 +58,53 @@ public class InMemoryDeckRepository
         }
         decks.put(deck.getId(), deck);
     }
+
+    // edit_deck methods tbd
+    @Override
+    public Optional<Deck> findDeck(int deckId) {
+        Deck stored = decks.get(deckId);
+
+        if (stored == null) {
+            return Optional.empty();
+        }
+
+        Deck snapshot = new Deck(
+                stored.getId(),
+                stored.getName(),
+                stored.getOwner()
+        );
+
+        for (Card card : stored.getCards()) {
+            snapshot.add_card(new Card(
+                    card.getId(),
+                    card.getQuestion(),
+                    card.getAnswer()
+            ));
+        }
+
+        snapshot.getEditors().addAll(stored.getEditors());
+
+        return Optional.of(snapshot);
+    }
+
+@Override
+public void renameDeck(int deckId, String name, String actingUsername) {
+    Deck stored = decks.get(deckId);
+
+    if (stored == null) {
+        throw new EditDeckDataAccessException(
+                "Deck no longer exists."
+        );
+    }
+
+    if (!stored.getOwner().equals(actingUsername)) {
+        throw new EditDeckDataAccessException(
+                "User is no longer allowed to rename this deck."
+        );
+    }
+
+    stored.rename(name);
+}
 
     @Override
     public int generateCardId() {

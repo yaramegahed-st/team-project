@@ -14,7 +14,7 @@ public class Deck {
 
   public Deck(int deckId, String deckName, String owner) {
     this.deckId = deckId;
-    this.deckName = deckName;
+    rename(deckName);
     this.owner = owner;
     this.editors = new ArrayList<>();
     this.cards = new ArrayList<>();
@@ -50,6 +50,14 @@ public class Deck {
 
     // if card not found silently return, add error message here
     return;
+    }
+
+    // add edit features
+    public void rename(String newName) {
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Deck name cannot be blank");
+        }
+        this.deckName = newName;
     }
   }
 
