@@ -18,7 +18,7 @@ public class ViewManagerModel {
         return this.currentViewName;
     }
 
-    public boolean isForward() { return forward; }
+    public boolean isForward() { return this.forward; }
 
     public void setState(String currentViewName) {
         this.currentViewName = currentViewName;

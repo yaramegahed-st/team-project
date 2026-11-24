@@ -1,14 +1,16 @@
 package view;
 
+import view.components.OutlinedLabel;
+import view.style.Easing;
+import view.style.FontLoader;
+import view.style.IconLoader;
+
 import javax.swing.*;
 import java.awt.*;
-import view.style.*;
-import view.components.*;
-import interface_adapter.*;
 
 public class LoadingPanel extends JPanel {
     private static final int DURATION_MS = 1200;
-    private static final double BASE_W = 651.0;   // the width your layout was designed for
+    private static final double BASE_W = 651.0;   // the width the layout was designed for
     private static final double BASE_H = 394.0;
 
     private final double s;                       // scale factor
@@ -18,12 +20,11 @@ public class LoadingPanel extends JPanel {
 
     private final Point titleStart, titleEnd, imageStart, imageEnd;
 
-    // helper: scale a design-time value to the current size
     private int sc(double v) {
         return (int) Math.round(v * s);
     }
 
-    public LoadingPanel(int width, ViewManagerModel viewManagerModel) {              // pass the frame width
+    public LoadingPanel(int width) {              // pass the frame width
         s = width / BASE_W;
         int height = sc(BASE_H);
 
@@ -33,29 +34,29 @@ public class LoadingPanel extends JPanel {
 
         // --- Title ---
         title = new OutlinedLabel("FlashShare");
-        title.setFont(FontLoader.loadDamion((float) (80f * s)));   // font scales too
+        title.setFont(FontLoader.loadDamion((float) (80f * s)));
         title.setForeground(Color.decode("#B5FFFF"));
         title.setStrokeColor(Color.decode("#4E54F9"));
-        title.setStrokeWidth((float) (2.5f * s));                  // outline scales
+        title.setStrokeWidth((float) (2.5f * s));
         title.setShadowColor(new Color(0, 20, 40, 150));
-        title.setShadowOffset(sc(4), sc(6));                       // shadow scales
+        title.setShadowOffset(sc(4), sc(6));
         int titleW = sc(441), titleH = sc(139);
         title.setSize(titleW, titleH);
 
-        int titleX = (width - titleW) / 2;                         // horizontally centered
+        int titleX = (width - titleW) / 2;                          // horizontally centered
         titleStart = new Point(titleX, sc(58));
         titleEnd   = new Point(titleX, sc(116));
 
         // --- Image ---
-        ImageIcon icon = new ImageIcon("src/main/resources/icons/streak.jpeg");
+        ImageIcon icon = IconLoader.load("streak.jpeg");
         int targetWidth = sc(345);
-        int targetHeight = icon.getIconHeight() * targetWidth / icon.getIconWidth();
+        int targetHeight = icon.getIconHeight() * targetWidth / icon.getIconWidth();   // keeps aspect ratio
         Image scaled = icon.getImage().getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
         imageLabel = new JLabel(new ImageIcon(scaled));
         imageLabel.setSize(targetWidth, targetHeight);
 
-        int imageX = (width - targetWidth) / 2;                    // horizontally centered
-        imageStart = new Point(imageX, sc(300));
+        int imageX = (width - targetWidth) / 2;                     // horizontally centered
+        imageStart = new Point(imageX, sc(300));                    // just below the visible area
         imageEnd   = new Point(imageX, sc(208));
 
         title.setLocation(titleStart);
@@ -68,16 +69,11 @@ public class LoadingPanel extends JPanel {
     public void startAnimation() {
         long startTime = System.nanoTime();
 
-        //creates timer
-        Timer timer = new Timer(10, null);
-        //starts action: this uses a lambda expression (e ->) which is a shortcut to place your action
-        // implementation inside the action listener call
+        javax.swing.Timer timer = new javax.swing.Timer(10, null);
         timer.addActionListener(e -> {
             double elapsedMs = (System.nanoTime() - startTime) / 1_000_000.0;
             double t = Math.min(1.0, elapsedMs / DURATION_MS);
-
-            //here is where you can adjust the animation to your liking
-            double eased = Easing.easeOutBounce(t);    // ease-out cubic: fast start, soft landing
+            double eased = Easing.easeOutBounce(t);
 
             title.setLocation(lerp(titleStart, titleEnd, eased));
             imageLabel.setLocation(lerp(imageStart, imageEnd, eased));
@@ -89,7 +85,7 @@ public class LoadingPanel extends JPanel {
         timer.start();
     }
 
-    //function that creates a point that is some distance between 2 points (linear interpolation)
+    // linear interpolation between two points
     private static Point lerp(Point a, Point b, double t) {
         return new Point(
                 (int) Math.round(a.x + (b.x - a.x) * t),

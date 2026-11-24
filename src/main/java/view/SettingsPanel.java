@@ -1,10 +1,17 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
+import interface_adapter.home.HomeViewModel;
+import interface_adapter.profile.ProfileViewModel;
+import view.components.LabelHoverZoom;
+import view.components.OutlinedLabel;
+import view.components.SettingsGroup;
+import view.style.FontLoader;
+import view.style.IconLoader;
+import view.style.Theme;
+
 import javax.swing.*;
 import java.awt.*;
-import view.style.*;
-import view.components.*;
-import interface_adapter.*;
 
 public class SettingsPanel extends JPanel {
     private static final double BASE_W = 651.0;
@@ -15,15 +22,11 @@ public class SettingsPanel extends JPanel {
     private final OutlinedLabel heading;
     private final SettingsGroup[] groups = new SettingsGroup[4];
 
-    private Runnable onTitleClicked;
-    public void setOnTitleClicked(Runnable r) { this.onTitleClicked = r; }
-
-    /** Hook for later: e.g. setRowAction(1, 0, () -> ...) for SIGN OUT's group, top row. */
+    /** Hook for later: e.g. setRowAction(1, 1, ...) for SIGN OUT (group 1, bottom row). */
     public void setRowAction(int group, int row, Runnable r) { groups[group].setAction(row, r); }
 
     private int sc(double v) { return (int) Math.round(v * s); }
 
-    // Sizes a label to fit its text; colours come from Theme (see applyTheme)
     private void styleAndFit(OutlinedLabel label, double strokeW, Font f, int shadowX, int shadowY) {
         label.setFont(f);
         label.setStrokeWidth((float) (strokeW * s));
@@ -41,16 +44,13 @@ public class SettingsPanel extends JPanel {
         setLayout(null);
         setPreferredSize(new Dimension(width, height));
 
-        // --- Flash title (top-left) ---
+        // --- Flash title (top-left, click to go home) ---
         titleFlash = new OutlinedLabel("FlashShare");
-        styleAndFit(titleFlash, 0.9, FontLoader.loadDamion((float) (26f * s)), 2, 3);
+        Font f1 = FontLoader.loadDamion((float) (26f * s));
+        styleAndFit(titleFlash, 0.9, f1, 2, 3);
         titleFlash.setLocation(0, 0);
-        titleFlash.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        titleFlash.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (onTitleClicked != null) onTitleClicked.run();
-            }
-        });
+        LabelHoverZoom.attach(titleFlash, f1, (float) (0.9 * s), sc(2), sc(3), sc(8), 1.08,
+                () -> viewManagerModel.navigate(HomeViewModel.VIEW_NAME, false));
 
         // --- Heading (centered) ---
         heading = new OutlinedLabel("Settings");
@@ -77,11 +77,12 @@ public class SettingsPanel extends JPanel {
             add(groups[i]);
         }
 
-        // only the dark mode row does anything for now
+        // PROFILE opens the profile view; DARK MODE toggles the shared theme
+        groups[0].setAction(0, () -> viewManagerModel.navigate(ProfileViewModel.VIEW_NAME, true));
         groups[0].setAction(1, () -> Theme.setDark(!Theme.isDark()));
 
         // --- Cards image (bottom-right) ---
-        ImageIcon cardsRaw = new ImageIcon("src/main/resources/icons/cards2.jpeg");
+        ImageIcon cardsRaw = IconLoader.load("cards2.jpeg");
         int cardsW = (int) Math.round(width * 0.14);
         int cardsH = cardsRaw.getIconHeight() * cardsW / cardsRaw.getIconWidth();
         Image cardsScaled = cardsRaw.getImage().getScaledInstance(cardsW, cardsH, Image.SCALE_SMOOTH);
@@ -103,7 +104,7 @@ public class SettingsPanel extends JPanel {
         titleFlash.setStrokeColor(Theme.flashStroke());
         heading.setForeground(Theme.headingFill());
         heading.setStrokeColor(Theme.headingStroke());
-        groups[0].setLabel(1, Theme.isDark() ? "LIGHT MODE" : "DARK MODE");   // the row names what it will switch to
+        groups[0].setLabel(1, Theme.isDark() ? "LIGHT MODE" : "DARK MODE");   // names what it will switch to
         repaint();
     }
 }

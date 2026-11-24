@@ -1,13 +1,19 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
+import interface_adapter.home.HomeViewModel;
+import interface_adapter.new_deck.NewDeckViewModel;
+import interface_adapter.settings.SettingsViewModel;
+import view.components.*;
+import view.style.FontLoader;
+import view.style.IconLoader;
+import view.style.Theme;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.function.Consumer;
-import view.style.*;
-import view.components.*;
-import interface_adapter.*;
 
+/** One folder's contents. Each folder gets its own instance, registered under its own view name. */
 public class FolderPanel extends JPanel {
     private static final double BASE_W = 651.0;
     private static final double BASE_H = 394.0;
@@ -20,19 +26,7 @@ public class FolderPanel extends JPanel {
     private final java.util.List<TileButton> tiles = new ArrayList<>();
     private final JPanel tileBox;
     private final Font tileFont;
-    private int tileW, tileH, tileGap, tileStartX, tileTopY, viewW, viewH;
-
-    private Runnable onTitleClicked;
-    private Runnable onSettingsClicked;
-    private Runnable onNewDeckClicked;
-    private Consumer<String> onFolderCreated;
-    private Runnable onCancelled;
-
-    public void setOnTitleClicked(Runnable r)       { this.onTitleClicked = r; }
-    public void setOnSettingsClicked(Runnable r)    { this.onSettingsClicked = r; }
-    public void setOnNewDeckClicked(Runnable r)     { this.onNewDeckClicked = r; }
-    public void setOnFolderCreated(Consumer<String> c) { this.onFolderCreated = c; }
-    public void setOnCancelled(Runnable r)          { this.onCancelled = r; }
+    private final int tileW, tileH, tileGap, tileStartX, tileTopY, viewW, viewH;
 
     private int sc(double v) { return (int) Math.round(v * s); }
 
@@ -46,7 +40,11 @@ public class FolderPanel extends JPanel {
         label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    public FolderPanel(int width, ViewManagerModel viewManagerModel) {
+    /**
+     * @param viewName the name this panel is registered under; New Deck uses it to return here
+     */
+    public FolderPanel(int width, ViewManagerModel viewManagerModel,
+                       NewDeckViewModel newDeckViewModel, String viewName) {
         s = width / BASE_W;
         int height = sc(BASE_H);
 
@@ -57,26 +55,25 @@ public class FolderPanel extends JPanel {
         int settingsSlot = sc(40);
         int lift = sc(8);
 
-        // --- Flash title (top-left) ---
+        // --- Flash title (top-left, click to go home) ---
         titleFlash = new OutlinedLabel("FlashShare");
         Font f1 = FontLoader.loadDamion((float) (26f * s));
         styleAndFit(titleFlash, 0.9, f1, 2, 3);
         titleFlash.setLocation(0, 0);
         LabelHoverZoom.attach(titleFlash, f1, (float) (0.9 * s), sc(2), sc(3), sc(8), 1.08,
-                () -> { if (onTitleClicked != null) onTitleClicked.run(); });
+                () -> viewManagerModel.navigate(HomeViewModel.VIEW_NAME, false));
 
         // --- Settings button (top-right) ---
         int iconSize = settingsSlot - sc(6);
-        ImageIcon rawIcon = new ImageIcon("src/main/resources/icons/settings2.jpeg");
+        ImageIcon rawIcon = IconLoader.load("settings2.jpeg");
         Image scaledIcon = rawIcon.getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH);
         settingsButton = new SpinningIconButton(scaledIcon);
         settingsButton.setSize(settingsSlot, settingsSlot);
         settingsButton.setToolTipText("Settings");
         settingsButton.setLocation(width - margin - settingsSlot,
                 margin - lift + (titleFlash.getHeight() - settingsSlot) / 2);
-        settingsButton.addActionListener(e -> {
-            if (onSettingsClicked != null) onSettingsClicked.run();
-        });
+        settingsButton.addActionListener(e ->
+                viewManagerModel.navigate(SettingsViewModel.VIEW_NAME, true));
 
         // --- Container (below the title row) ---
         int boxW = width - 2 * sc(15);
@@ -116,18 +113,21 @@ public class FolderPanel extends JPanel {
         box.add(tileScroll);
 
         // --- Plus button: starts the New Deck flow for this folder ---
-        ImageIcon plusRaw = new ImageIcon("src/main/resources/icons/plus2.jpeg");
+        ImageIcon plusRaw = IconLoader.load("plus2.jpeg");
         int plusW = (int) Math.round(boxH * 0.20);
         int plusH = plusRaw.getIconHeight() * plusW / plusRaw.getIconWidth();
         ZoomIconButton plus = new ZoomIconButton(plusRaw.getImage(), plusW, plusH, 1.12);
         int ex = (plus.getWidth() - plusW) / 2;
         int ey = (plus.getHeight() - plusH) / 2;
         plus.setLocation(boxW - sc(8) - plusW - ex, boxH - sc(8) - plusH - ey);
-        plus.addActionListener(e -> { if (onNewDeckClicked != null) onNewDeckClicked.run(); });
+        plus.addActionListener(e -> {
+            newDeckViewModel.setOriginView(viewName);                  // so New Deck returns here
+            viewManagerModel.navigate(NewDeckViewModel.VIEW_NAME, true);
+        });
         box.add(plus);
 
         // --- Cards image (bottom-left) ---
-        ImageIcon cardsRaw = new ImageIcon("src/main/resources/icons/cards2.jpeg");
+        ImageIcon cardsRaw = IconLoader.load("cards2.jpeg");
         int cardsW = (int) Math.round(width / 8.0 * 1.5);
         int cardsH = cardsRaw.getIconHeight() * cardsW / cardsRaw.getIconWidth();
         Image cardsScaled = cardsRaw.getImage().getScaledInstance(cardsW, cardsH, Image.SCALE_SMOOTH);
@@ -202,17 +202,6 @@ public class FolderPanel extends JPanel {
         menu.add(delete);
 
         menu.show(tile, (int) (tile.getWidth() * 0.1), (int) (tile.getHeight() * 0.3));
-    }
-
-    // ----- naming a brand-new folder -----
-    /** Asks for the folder name; call this after the panel is on screen. */
-    public void promptForName() {
-        String name = JOptionPane.showInputDialog(this, "Name your new folder:", "New folder");
-        if (name != null && !name.trim().isEmpty()) {
-            if (onFolderCreated != null) onFolderCreated.accept(name.trim());
-        } else {
-            if (onCancelled != null) onCancelled.run();
-        }
     }
 
     private void applyTheme() {
