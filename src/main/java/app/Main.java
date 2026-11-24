@@ -6,11 +6,20 @@ public class Main {
     public static void main(String[] args) {
         AppBuilder appBuilder = new AppBuilder();
         JFrame application = appBuilder
-                .addLoginView()
-                .addSignupView()
-                .addLoggedInView()
-                .addHomeView()
                 .addAccountsView()
+                .addSignupView()
+                .addLoginView()
+                .addLoggedInView()
+                .addLoadingView()
+                .addHomeView()
+                .addSettingsView()
+                .addProfileView()
+                .addAboutView()
+                .addChatbotView()
+                .addFreeAccessView()
+                .addNewDeckView()
+                .addStudyView()
+                .addTemporaryWiring()
                 .addSignupUseCase()
                 .addLoginUseCase()
                 .addChangePasswordUseCase()
@@ -21,4 +30,6 @@ public class Main {
         application.setLocationRelativeTo(null);
         application.setVisible(true);
     }
+
+
 }

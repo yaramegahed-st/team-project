@@ -12,13 +12,21 @@ public class ViewManagerModel {
     private final List<ViewManagerModelListener> listeners = new ArrayList<>();
 
     private String currentViewName = "";
+    private boolean forward = true;
 
     public String getCurrentViewName() {
         return this.currentViewName;
     }
 
+    public boolean isForward() { return this.forward; }
+
     public void setState(String currentViewName) {
         this.currentViewName = currentViewName;
+    }
+
+    public void setState(String currentViewName, boolean forward) {
+        this.currentViewName = currentViewName;
+        this.forward = forward;
     }
 
     public void addListener(ViewManagerModelListener listener) {
@@ -29,5 +37,10 @@ public class ViewManagerModel {
         for (ViewManagerModelListener listener : listeners) {
             listener.viewChanged();
         }
+    }
+
+    public void navigate(String name, boolean forward) {
+        setState(name, forward);
+        notifyViewChanged();
     }
 }

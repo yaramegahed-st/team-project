@@ -1,59 +1,48 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
+import interface_adapter.home.HomeViewModel;
+import interface_adapter.settings.SettingsViewModel;
+import view.components.LabelHoverZoom;
+import view.components.OutlinedLabel;
+import view.components.SpinningIconButton;
+import view.style.FontLoader;
+import view.style.IconLoader;
+import view.style.Theme;
+
 import javax.swing.*;
 import java.awt.*;
-import view.style.*;
-import view.components.*;
 
 public class AboutPanel extends JPanel {
     private static final double BASE_W = 651.0;
     private static final double BASE_H = 394.0;
     private final double s;
-    private JPanel box;
-    private OutlinedLabel title;
+
+    private final JPanel box;
+    private final OutlinedLabel title;
+    private final OutlinedLabel titleFlash;
+    private final SpinningIconButton settingsButton;
     private final java.util.List<OutlinedLabel> bodyLabels = new java.util.ArrayList<>();
 
-    private static final Color FILL    = Color.decode("#8AD1D1");   // teal text, approximate from your mockup
-    private static final Color OUTLINE = Color.decode("#1F3A4D");   // dark outline
+    private int sc(double v) { return (int) Math.round(v * s); }
 
-    private final OutlinedLabel titleFlash;
-
-    private Runnable onTitleClicked;
-
-    public void setOnTitleClicked(Runnable r) { this.onTitleClicked = r; }
-
-    private final SpinningIconButton settingsButton;
-    private Runnable onSettingsClicked;   // set from MyFrame
-
-    public void setOnSettingsClicked(Runnable r) {
-        this.onSettingsClicked = r;
-    }
-
-    // Styles a label and sizes it to fit its text at the given design-time font size
-    private void styleAndFit(OutlinedLabel label, double strokeW,  Font f, int shadowX, int shadowY) {
-        label.setForeground(Color.decode("#386782"));
-        label.setStrokeColor(Color.decode("#C7C7C7"));
+    // Sizes a label to fit its text; colours come from Theme (see applyTheme)
+    private void styleAndFit(OutlinedLabel label, double strokeW, Font f, int shadowX, int shadowY) {
+        label.setFont(f);
         label.setStrokeWidth((float) (strokeW * s));
         label.setShadowColor(new Color(0, 20, 40, 150));
         label.setShadowOffset(sc(shadowX), sc(shadowY));
-
         FontMetrics fm = label.getFontMetrics(f);
-        int pad = sc(8);                                     // room for the outline and shadow
-        label.setSize(fm.stringWidth(label.getText()) + 2 * pad,
-                fm.getHeight() + 2 * pad);
+        int pad = sc(8);
+        label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    private int sc(double v) {
-        return (int) Math.round(v * s);
-    }
-
-    public AboutPanel(int width) {
+    public AboutPanel(int width, ViewManagerModel viewManagerModel) {
         s = width / BASE_W;
         int height = sc(BASE_H);
 
         setLayout(null);
         setPreferredSize(new Dimension(width, height));
-        setBackground(Color.decode("#F1FBFE"));
 
         int margin = sc(10);
         int settingsSlot = sc(40);
@@ -61,26 +50,15 @@ public class AboutPanel extends JPanel {
 
         // --- Flash title (top-left) ---
         titleFlash = new OutlinedLabel("FlashShare");
-        Font f1 = FontLoader.loadDamion((float) (26f * s));      // font size here
-        titleFlash.setFont(f1);
-        styleAndFit(titleFlash, 0.9, f1, 2, 3);                  // stroke width here
-        titleFlash.setLocation(sc(0), sc(0));
-
-        titleFlash.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        titleFlash.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (onTitleClicked != null) onTitleClicked.run();
-            }
-        });
-
-        LabelHoverZoom.attach(titleFlash, f1, (float) (1.0 * s), sc(2), sc(3), sc(8), 1.08,
-                () -> { if (onTitleClicked != null) onTitleClicked.run(); });
-
+        Font f1 = FontLoader.loadDamion((float) (26f * s));
+        styleAndFit(titleFlash, 0.9, f1, 2, 3);
+        titleFlash.setLocation(0, 0);
+        LabelHoverZoom.attach(titleFlash, f1, (float) (0.9 * s), sc(2), sc(3), sc(8), 1.08,
+                () -> viewManagerModel.navigate(HomeViewModel.VIEW_NAME, false));
 
         // --- Title (centered at the top) ---
         title = new OutlinedLabel("About");
-        styleLabel(title, FontLoader.loadAdlam((float) (44f * s)), 1.2);
+        styleAndFit(title, 1.2, FontLoader.loadAdlam((float) (44f * s)), 0, 0);
         title.setLocation((width - title.getWidth()) / 2, sc(4));
         add(title);
 
@@ -90,8 +68,6 @@ public class AboutPanel extends JPanel {
         int boxY = title.getY() + title.getHeight() + sc(8);
 
         box = new JPanel(null);
-        box.setBackground(Color.decode("#C9DFEA"));
-        box.setBorder(BorderFactory.createLineBorder(Color.decode("#43687F"), 1));
         box.setBounds((width - boxW) / 2, boxY, boxW, boxH);
         add(box);
 
@@ -101,49 +77,26 @@ public class AboutPanel extends JPanel {
         int y = sc(14);
         y = addWrapped(box, "This application was designed for a school project......", bodyFont, y, maxTextW);
         y += sc(30);                                                    // gap between paragraphs
-        addWrapped(box, "Here we'll explain the mechanics of how everything will work on the app for new users",
+        addWrapped(box, "Here we\u2019ll explain the mechanics of how everything will work on the app for new users",
                 bodyFont, y, maxTextW);
 
         // --- Settings button (top-right corner) ---
-        int iconSize = settingsSlot - sc(6);                       // leave a little breathing room
-        ImageIcon rawIcon = new ImageIcon("src/main/resources/icons/settings2.jpeg");
+        int iconSize = settingsSlot - sc(6);
+        ImageIcon rawIcon = IconLoader.load("settings2.jpeg");
         Image scaledIcon = rawIcon.getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH);
-
         settingsButton = new SpinningIconButton(scaledIcon);
         settingsButton.setSize(settingsSlot, settingsSlot);
-        settingsButton.setBorderPainted(false);       // no border
-        settingsButton.setContentAreaFilled(false);   // no gray button background
-        settingsButton.setFocusPainted(false);        // no focus ring
-        settingsButton.setOpaque(false);
-        settingsButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         settingsButton.setToolTipText("Settings");
-
-        int btnX = width - margin - settingsSlot;
-        int btnY = margin - lift + (titleFlash.getHeight() - settingsButton.getHeight()) / 2;
-        settingsButton.setLocation(btnX, btnY);
-
-        settingsButton.addActionListener(e -> {
-            if (onSettingsClicked != null) onSettingsClicked.run();
-        });
+        settingsButton.setLocation(width - margin - settingsSlot,
+                margin - lift + (titleFlash.getHeight() - settingsSlot) / 2);
+        settingsButton.addActionListener(e ->
+                viewManagerModel.navigate(SettingsViewModel.VIEW_NAME, true));
 
         add(titleFlash);
         add(settingsButton);
+
         Theme.addListener(this::applyTheme);
         applyTheme();
-    }
-
-    // Styles an OutlinedLabel and sizes it to fit its text
-    private void styleLabel(OutlinedLabel label, Font font, double strokeW) {
-        label.setFont(font);
-        label.setForeground(FILL);
-        label.setStrokeColor(OUTLINE);
-        label.setStrokeWidth((float) (strokeW * s));
-        label.setShadowOffset(0, 0);                                    // no shadow in this design
-        label.setOpaque(false);
-
-        FontMetrics fm = label.getFontMetrics(font);
-        int pad = sc(8);
-        label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
     // Wraps text into centered lines inside parent; returns the y position below the last line
@@ -166,7 +119,7 @@ public class AboutPanel extends JPanel {
 
     private int addLine(JPanel parent, String text, Font font, int y, FontMetrics fm) {
         OutlinedLabel l = new OutlinedLabel(text);
-        styleLabel(l, font, 0.8);
+        styleAndFit(l, 0.8, font, 0, 0);
         int pad = sc(8);
         l.setLocation((parent.getWidth() - l.getWidth()) / 2, y - pad);  // pad offset keeps the text itself at y
         parent.add(l);
@@ -188,5 +141,4 @@ public class AboutPanel extends JPanel {
         }
         repaint();
     }
-
 }

@@ -1,60 +1,54 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
+import interface_adapter.home.HomeViewModel;
+import interface_adapter.settings.SettingsViewModel;
+import view.components.LabelHoverZoom;
+import view.components.OutlinedLabel;
+import view.components.PromptBar;
+import view.components.SpinningIconButton;
+import view.style.FontLoader;
+import view.style.IconLoader;
+import view.style.Theme;
+
 import javax.swing.*;
 import java.awt.*;
-import view.style.*;
-import view.components.*;
+import java.awt.event.HierarchyEvent;
+import java.util.function.Consumer;
 
+/** The assistant screen: a heading and a prompt bar. */
 public class ChatbotPanel extends JPanel {
     private static final double BASE_W = 651.0;
     private static final double BASE_H = 394.0;
     private final double s;
-    private final OutlinedLabel heading;
 
     private final OutlinedLabel titleFlash;
-
-    private Runnable onTitleClicked;
-
-    public void setOnTitleClicked(Runnable r) { this.onTitleClicked = r; }
-
+    private final OutlinedLabel heading;
     private final SpinningIconButton settingsButton;
-    private Runnable onSettingsClicked;   // set from MyFrame
+    private final PromptBar promptBar;
 
-    public void setOnSettingsClicked(Runnable r) {
-        this.onSettingsClicked = r;
-    }
+    // TEMPORARY hook: replaced by AskAssistantController
+    private Consumer<String> onPromptSubmitted;
+    public void setOnPromptSubmitted(Consumer<String> c) { this.onPromptSubmitted = c; }
 
-    private PromptBar promptBar;
-    private java.util.function.Consumer<String> onPromptSubmitted;
+    private int sc(double v) { return (int) Math.round(v * s); }
 
-    public void setOnPromptSubmitted(java.util.function.Consumer<String> c) { this.onPromptSubmitted = c; }
-    public void focusPrompt() { promptBar.focusInput(); }
-
-    // Styles a label and sizes it to fit its text at the given design-time font size
-    private void styleAndFit(OutlinedLabel label, double strokeW,  Font f, int shadowX, int shadowY) {
-        label.setForeground(Color.decode("#386782"));
-        label.setStrokeColor(Color.decode("#C7C7C7"));
+    private void styleAndFit(OutlinedLabel label, double strokeW, Font f, int shadowX, int shadowY) {
+        label.setFont(f);
         label.setStrokeWidth((float) (strokeW * s));
         label.setShadowColor(new Color(0, 20, 40, 150));
         label.setShadowOffset(sc(shadowX), sc(shadowY));
-
         FontMetrics fm = label.getFontMetrics(f);
-        int pad = sc(8);                                     // room for the outline and shadow
-        label.setSize(fm.stringWidth(label.getText()) + 2 * pad,
-                fm.getHeight() + 2 * pad);
+        int pad = sc(8);
+        label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    private int sc(double v) {
-        return (int) Math.round(v * s);
-    }
-
-    public ChatbotPanel(int width) {
+    public ChatbotPanel(int width, ViewManagerModel viewManagerModel) {
         s = width / BASE_W;
         int height = sc(BASE_H);
 
         setLayout(null);
         setPreferredSize(new Dimension(width, height));
-        setBackground(Color.decode("#F1FBFE"));
 
         int margin = sc(10);
         int settingsSlot = sc(40);
@@ -62,52 +56,27 @@ public class ChatbotPanel extends JPanel {
 
         // --- Flash title (top-left) ---
         titleFlash = new OutlinedLabel("FlashShare");
-        Font f1 = FontLoader.loadDamion((float) (26f * s));      // font size here
-        titleFlash.setFont(f1);
-        styleAndFit(titleFlash, 0.9, f1, 2, 3);                  // stroke width here
-        titleFlash.setLocation(sc(0), sc(0));
+        Font f1 = FontLoader.loadDamion((float) (26f * s));
+        styleAndFit(titleFlash, 0.9, f1, 2, 3);
+        titleFlash.setLocation(0, 0);
+        LabelHoverZoom.attach(titleFlash, f1, (float) (0.9 * s), sc(2), sc(3), sc(8), 1.08,
+                () -> viewManagerModel.navigate(HomeViewModel.VIEW_NAME, false));
 
-        titleFlash.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        titleFlash.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (onTitleClicked != null) onTitleClicked.run();
-            }
-        });
-
-        LabelHoverZoom.attach(titleFlash, f1, (float) (1.0 * s), sc(2), sc(3), sc(8), 1.08,
-                () -> { if (onTitleClicked != null) onTitleClicked.run(); });
-
-
-        // --- Settings button (top-right corner) ---
-        int iconSize = settingsSlot - sc(6);                       // leave a little breathing room
-        ImageIcon rawIcon = new ImageIcon("src/main/resources/icons/settings2.jpeg");
+        // --- Settings button (top-right) ---
+        int iconSize = settingsSlot - sc(6);
+        ImageIcon rawIcon = IconLoader.load("settings2.jpeg");
         Image scaledIcon = rawIcon.getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH);
-
         settingsButton = new SpinningIconButton(scaledIcon);
         settingsButton.setSize(settingsSlot, settingsSlot);
-        settingsButton.setBorderPainted(false);       // no border
-        settingsButton.setContentAreaFilled(false);   // no gray button background
-        settingsButton.setFocusPainted(false);        // no focus ring
-        settingsButton.setOpaque(false);
-        settingsButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         settingsButton.setToolTipText("Settings");
-
-        int btnX = width - margin - settingsSlot;
-        int btnY = margin - lift + (titleFlash.getHeight() - settingsButton.getHeight()) / 2;
-        settingsButton.setLocation(btnX, btnY);
-
-        settingsButton.addActionListener(e -> {
-            if (onSettingsClicked != null) onSettingsClicked.run();
-        });
+        settingsButton.setLocation(width - margin - settingsSlot,
+                margin - lift + (titleFlash.getHeight() - settingsSlot) / 2);
+        settingsButton.addActionListener(e ->
+                viewManagerModel.navigate(SettingsViewModel.VIEW_NAME, true));
 
         // --- Heading ---
         heading = new OutlinedLabel("What can I help you with today?");
-        Font headingFont = FontLoader.loadAdlam((float) (26f * s));
-        heading.setFont(headingFont);
-        styleAndFit(heading, 1.0, headingFont, 1, 2);
-        heading.setForeground(Color.decode("#8AD1D1"));            // teal fill
-        heading.setStrokeColor(Color.decode("#1F3A4D"));           // dark outline
+        styleAndFit(heading, 1.0, FontLoader.loadAdlam((float) (26f * s)), 1, 2);
         heading.setLocation((width - heading.getWidth()) / 2, (int) (height * 0.17));
 
         // --- Prompt bar ---
@@ -121,7 +90,7 @@ public class ChatbotPanel extends JPanel {
         promptBar.setOnAttach(() -> System.out.println("Attach clicked"));   // replace later
 
         // --- Cards image (bottom-right) ---
-        ImageIcon cardsRaw = new ImageIcon("src/main/resources/icons/cards2.jpeg");
+        ImageIcon cardsRaw = IconLoader.load("cards2.jpeg");
         int cardsW = (int) Math.round(width * 0.14);
         int cardsH = cardsRaw.getIconHeight() * cardsW / cardsRaw.getIconWidth();
         Image cardsScaled = cardsRaw.getImage().getScaledInstance(cardsW, cardsH, Image.SCALE_SMOOTH);
@@ -135,6 +104,13 @@ public class ChatbotPanel extends JPanel {
         add(promptBar);
         add(cardsLabel);
 
+        // put the cursor in the prompt bar whenever this screen is shown
+        addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && isShowing()) {
+                SwingUtilities.invokeLater(promptBar::focusInput);
+            }
+        });
+
         Theme.addListener(this::applyTheme);
         applyTheme();
     }
@@ -147,5 +123,4 @@ public class ChatbotPanel extends JPanel {
         heading.setStrokeColor(Theme.headingStroke());
         repaint();
     }
-
 }

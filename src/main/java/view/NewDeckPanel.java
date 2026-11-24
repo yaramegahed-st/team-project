@@ -1,11 +1,18 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
+import interface_adapter.new_deck.NewDeckViewModel;
+import interface_adapter.settings.SettingsViewModel;
+import view.components.*;
+import view.style.FontLoader;
+import view.style.IconLoader;
+import view.style.Theme;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.function.Consumer;
-import view.style.*;
-import view.components.*;
 
+/** "Do you prefer to..?": create a new deck or access an existing one. */
 public class NewDeckPanel extends JPanel {
     private static final double BASE_W = 651.0;
     private static final double BASE_H = 394.0;
@@ -15,15 +22,12 @@ public class NewDeckPanel extends JPanel {
     private final OutlinedLabel heading;
     private final SpinningIconButton settingsButton;
 
-    private Runnable onTitleClicked;
-    private Runnable onSettingsClicked;
+    // TEMPORARY hooks: replaced by AddDeckController / AccessDeckController
     private Consumer<DeckDialogs.NewDeck> onDeckCreated;
     private Consumer<String> onAccessDeck;
 
-    public void setOnTitleClicked(Runnable r)                      { this.onTitleClicked = r; }
-    public void setOnSettingsClicked(Runnable r)                   { this.onSettingsClicked = r; }
-    public void setOnDeckCreated(Consumer<DeckDialogs.NewDeck> c)  { this.onDeckCreated = c; }
-    public void setOnAccessDeck(Consumer<String> c)                { this.onAccessDeck = c; }
+    public void setOnDeckCreated(Consumer<DeckDialogs.NewDeck> c) { this.onDeckCreated = c; }
+    public void setOnAccessDeck(Consumer<String> c)               { this.onAccessDeck = c; }
 
     private int sc(double v) { return (int) Math.round(v * s); }
 
@@ -37,7 +41,7 @@ public class NewDeckPanel extends JPanel {
         label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    public NewDeckPanel(int width) {
+    public NewDeckPanel(int width, ViewManagerModel viewManagerModel, NewDeckViewModel newDeckViewModel) {
         s = width / BASE_W;
         int height = sc(BASE_H);
 
@@ -48,29 +52,25 @@ public class NewDeckPanel extends JPanel {
         int settingsSlot = sc(40);
         int lift = sc(8);
 
-        // --- Flash title (top-left) ---
+        // --- Flash title (top-left): back to whichever view opened this one ---
         titleFlash = new OutlinedLabel("FlashShare");
-        styleAndFit(titleFlash, 0.9, FontLoader.loadDamion((float) (26f * s)), 2, 3);
+        Font f1 = FontLoader.loadDamion((float) (26f * s));
+        styleAndFit(titleFlash, 0.9, f1, 2, 3);
         titleFlash.setLocation(0, 0);
-        titleFlash.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        titleFlash.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (onTitleClicked != null) onTitleClicked.run();
-            }
-        });
+        LabelHoverZoom.attach(titleFlash, f1, (float) (0.9 * s), sc(2), sc(3), sc(8), 1.08,
+                () -> viewManagerModel.navigate(newDeckViewModel.getState().getOriginView(), false));
 
         // --- Settings button (top-right) ---
         int iconSize = settingsSlot - sc(6);
-        ImageIcon rawIcon = new ImageIcon("src/main/resources/icons/settings2.jpeg");
+        ImageIcon rawIcon = IconLoader.load("settings2.jpeg");
         Image scaledIcon = rawIcon.getImage().getScaledInstance(iconSize, iconSize, Image.SCALE_SMOOTH);
         settingsButton = new SpinningIconButton(scaledIcon);
         settingsButton.setSize(settingsSlot, settingsSlot);
         settingsButton.setToolTipText("Settings");
         settingsButton.setLocation(width - margin - settingsSlot,
                 margin - lift + (titleFlash.getHeight() - settingsSlot) / 2);
-        settingsButton.addActionListener(e -> {
-            if (onSettingsClicked != null) onSettingsClicked.run();
-        });
+        settingsButton.addActionListener(e ->
+                viewManagerModel.navigate(SettingsViewModel.VIEW_NAME, true));
 
         // --- Heading ---
         heading = new OutlinedLabel("Do you prefer to..?");
@@ -101,7 +101,7 @@ public class NewDeckPanel extends JPanel {
         });
 
         // --- Cards image (bottom-left) ---
-        ImageIcon cardsRaw = new ImageIcon("src/main/resources/icons/cards2.jpeg");
+        ImageIcon cardsRaw = IconLoader.load("cards2.jpeg");
         int cardsW = (int) Math.round(width * 0.14);
         int cardsH = cardsRaw.getIconHeight() * cardsW / cardsRaw.getIconWidth();
         Image cardsScaled = cardsRaw.getImage().getScaledInstance(cardsW, cardsH, Image.SCALE_SMOOTH);

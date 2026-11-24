@@ -1,11 +1,17 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
+import interface_adapter.home.HomeViewModel;
+import view.components.LabelHoverZoom;
+import view.components.OutlinedLabel;
+import view.style.FontLoader;
+import view.style.Theme;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
-import view.style.*;
-import view.components.*;
 
+/** Shows the chosen study session. A shell for now: it displays the selection, not the cards. */
 public class StudyPanel extends JPanel {
     private static final double BASE_W = 651.0;
     private static final double BASE_H = 394.0;
@@ -18,8 +24,6 @@ public class StudyPanel extends JPanel {
     private final JLabel info = new JLabel("", SwingConstants.CENTER);
     private List<Integer> positions = new java.util.ArrayList<>();
 
-    private Runnable onTitleClicked;
-    public void setOnTitleClicked(Runnable r) { this.onTitleClicked = r; }
     public List<Integer> getPositions() { return positions; }
 
     private int sc(double v) { return (int) Math.round(v * s); }
@@ -34,7 +38,7 @@ public class StudyPanel extends JPanel {
         label.setSize(fm.stringWidth(label.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
     }
 
-    public StudyPanel(int width) {
+    public StudyPanel(int width, ViewManagerModel viewManagerModel) {
         this.panelWidth = width;
         s = width / BASE_W;
         int height = sc(BASE_H);
@@ -42,16 +46,13 @@ public class StudyPanel extends JPanel {
         setLayout(null);
         setPreferredSize(new Dimension(width, height));
 
-        // --- Flash title (top-left, click to go back) ---
+        // --- Flash title (top-left, click to go home) ---
         titleFlash = new OutlinedLabel("FlashShare");
-        styleAndFit(titleFlash, 0.9, FontLoader.loadDamion((float) (26f * s)), 2, 3);
+        Font f1 = FontLoader.loadDamion((float) (26f * s));
+        styleAndFit(titleFlash, 0.9, f1, 2, 3);
         titleFlash.setLocation(0, 0);
-        titleFlash.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        titleFlash.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (onTitleClicked != null) onTitleClicked.run();
-            }
-        });
+        LabelHoverZoom.attach(titleFlash, f1, (float) (0.9 * s), sc(2), sc(3), sc(8), 1.08,
+                () -> viewManagerModel.navigate(HomeViewModel.VIEW_NAME, false));
 
         // --- Heading (text is set by startSession) ---
         headingFont = FontLoader.loadAdlam((float) (30f * s));
@@ -70,7 +71,7 @@ public class StudyPanel extends JPanel {
         applyTheme();
     }
 
-    /** Call before sliding to this panel. */
+    /** Call before navigating to this view. */
     public void startSession(String deckName, String mode, List<Integer> positions) {
         this.positions = positions;
 
@@ -80,7 +81,7 @@ public class StudyPanel extends JPanel {
         heading.setSize(fm.stringWidth(heading.getText()) + 2 * pad, fm.getHeight() + 2 * pad);
         heading.setLocation((panelWidth - heading.getWidth()) / 2, sc(50));
 
-        info.setText(mode + " · " + positions.size() + (positions.size() == 1 ? " card" : " cards"));
+        info.setText(mode + " \u00b7 " + positions.size() + (positions.size() == 1 ? " card" : " cards"));
         // later: load the cards at these positions and show the first one
         repaint();
     }
