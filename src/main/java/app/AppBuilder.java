@@ -180,7 +180,7 @@ public class AppBuilder {
         addDeckViewModel = new AddDeckViewModel();
         addDeckView = new AddDeckView(addDeckViewModel);
 
-        cardPanel.add(addDeckView, AddDeckViewModel.VIEW_NAME);
+        viewManager.register(AddDeckViewModel.VIEW_NAME, addDeckView);
         return this;
     }
 

@@ -32,8 +32,8 @@ public class InMemoryDeckRepository
 
             for (Card card : deck.getCards()) {
                 nextCardId = Math.max(nextCardId, card.getId() + 1);
-                nextDeckId = Math.max(nextDeckId, deck.getId() + 1);
             }
+            nextDeckId = Math.max(nextDeckId, deck.getId() + 1);
         }
     }
 
