@@ -94,8 +94,8 @@ public class LoggedInView extends JPanel implements ActionListener, LoggedInView
                         final LoggedInState currentState = loggedInViewModel.getState();
 
                         this.changePasswordController.execute(
-                                currentState.getUsername(),
-                                currentState.getPassword()
+                                currentState.getPassword(),
+                                currentState.getUsername()
                         );
                     }
                 }
