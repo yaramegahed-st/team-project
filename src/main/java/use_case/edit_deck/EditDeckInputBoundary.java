@@ -1,4 +1,5 @@
 package use_case.edit_deck;
 
-public class EditDeckInputBoundary {
+public interface EditDeckInputBoundary {
+    void execute(EditDeckInputData inputData);
 }

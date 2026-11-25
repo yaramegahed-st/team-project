@@ -5,16 +5,27 @@ import entity.Deck;
 import use_case.add_card.AddCardDataAccessInterface;
 import use_case.edit_card.EditCardDataAccessInterface;
 import use_case.edit_card.EditCardDataAccessException;
+import use_case.add_deck.AddDeckDataAccessInterface;
+import use_case.add_deck.AddDeckDataAccessInterfaceException;
+import use_case.edit_deck.EditDeckDataAccessInterface;
+import use_case.edit_deck.EditDeckDataAccessException;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
-public class InMemoryDeckRepository implements AddCardDataAccessInterface, EditCardDataAccessInterface {
+public class InMemoryDeckRepository 
+    implements 
+    AddCardDataAccessInterface, 
+    EditCardDataAccessInterface, 
+    AddDeckDataAccessInterface,
+    EditDeckDataAccessInterface
+    {
 
     private final Map<Integer, Deck> decks = new HashMap<>();
     private int nextCardId = 1;
+    private int nextDeckId = 1;
 
     public InMemoryDeckRepository(List<Deck> initialDecks) {
         for (Deck deck : initialDecks) {
@@ -25,6 +36,7 @@ public class InMemoryDeckRepository implements AddCardDataAccessInterface, EditC
             for (Card card : deck.getCards()) {
                 nextCardId = Math.max(nextCardId, card.getId() + 1);
             }
+            nextDeckId = Math.max(nextDeckId, deck.getId() + 1);
         }
     }
 
@@ -32,6 +44,67 @@ public class InMemoryDeckRepository implements AddCardDataAccessInterface, EditC
     public boolean deckExists(int deckId) {
         return decks.containsKey(deckId);
     }
+
+    @Override
+    public int generateDeckId() {
+        return nextDeckId++;
+    }
+
+    @Override
+    public void saveDeck(Deck deck) {
+        if (decks.containsKey(deck.getId())) {
+            throw new AddDeckDataAccessInterfaceException(
+                "id " + deck.getId() + " already exists");
+        }
+        decks.put(deck.getId(), deck);
+    }
+
+    // edit_deck methods tbd
+    @Override
+    public Optional<Deck> findDeck(int deckId) {
+        Deck stored = decks.get(deckId);
+
+        if (stored == null) {
+            return Optional.empty();
+        }
+
+        Deck snapshot = new Deck(
+                stored.getId(),
+                stored.getName(),
+                stored.getOwner()
+        );
+
+        for (Card card : stored.getCards()) {
+            snapshot.add_card(new Card(
+                    card.getId(),
+                    card.getQuestion(),
+                    card.getAnswer()
+            ));
+        }
+
+        snapshot.getEditors().addAll(stored.getEditors());
+
+        return Optional.of(snapshot);
+    }
+
+@Override
+public void renameDeck(int deckId, String name, String actingUsername) {
+    Deck stored = decks.get(deckId);
+
+    if (stored == null) {
+        throw new EditDeckDataAccessException(
+                "Deck no longer exists."
+        );
+    }
+
+    if (!stored.getOwner().equals(actingUsername)) {
+        throw new EditDeckDataAccessException(
+                "User is no longer allowed to rename this deck."
+        );
+    }
+
+    stored.rename(name);
+}
 
     @Override
     public int generateCardId() {

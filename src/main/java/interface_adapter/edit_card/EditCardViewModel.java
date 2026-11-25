@@ -6,6 +6,7 @@ import java.beans.PropertyChangeSupport;
 public class EditCardViewModel {
     public static final String CARD_UPDATED = "cardUpdated";
     public static final String ERROR = "error";
+    public static final String VIEW_NAME = "editCard";
 
     private final PropertyChangeSupport support =
             new PropertyChangeSupport(this);
