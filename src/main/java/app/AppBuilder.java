@@ -37,6 +37,9 @@ import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
 import interface_adapter.study.StudyViewModel;
+import interface_adapter.add_card.AddCardController;
+import interface_adapter.add_card.AddCardPresenter;
+import interface_adapter.add_card.AddCardViewModel;
 
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
@@ -59,6 +62,10 @@ import use_case.edit_deck.EditDeckInputBoundary;
 import use_case.edit_deck.EditDeckInteractor;
 import use_case.edit_deck.EditDeckOutputBoundary;
 import use_case.session.CurrentUserAccess;
+import use_case.access_deck.DeckPermissionAccess;
+import use_case.access_deck.DeckPermissionException;
+import use_case.add_card.AddCardInputBoundary;
+import use_case.add_card.AddCardInteractor;
 
 import view.AboutPanel;
 import view.AccountsView;
@@ -216,14 +223,16 @@ public class AppBuilder {
     }
 
     public AppBuilder addEditCardFeature() {
+        CurrentUserAccess session = userDataAccessObject::getCurrentUsername;
+
         editCardViewModel = new EditCardViewModel();
 
         EditCardPresenter presenter =
             new EditCardPresenter(editCardViewModel);
 
         EditCardInputBoundary interactor =
-            new EditCardInteractor(deckRepository, presenter);
-
+            new EditCardInteractor(deckRepository, presenter, session, deckRepository);
+        
         EditCardController controller =
             new EditCardController(interactor);
 
@@ -278,6 +287,33 @@ public class AppBuilder {
 
         ChangePasswordController changePasswordController = new ChangePasswordController(changePasswordInteractor);
         loggedInView.setChangePasswordController(changePasswordController);
+        return this;
+    }
+
+    public AppBuilder addCardUseCase() {
+        if (addDeckView == null) {
+            throw new IllegalStateException(
+                    "Call addAddDeckView() before addCardUseCase()."
+            );
+        }
+
+        CurrentUserAccess currentUserAccess =
+                userDataAccessObject::getCurrentUsername;
+        
+        DeckPermissionAccess deckPermissionAccess = deckRepository;
+
+        AddCardViewModel addModel = new AddCardViewModel();
+        AddCardPresenter addPresenter = new AddCardPresenter(addModel);
+
+        AddCardInputBoundary addInteractor = new AddCardInteractor(
+                deckRepository,
+                addPresenter,
+                currentUserAccess,
+                deckRepository
+        );
+
+        AddCardController addController = 
+        new AddCardController(addInteractor);
         return this;
     }
 

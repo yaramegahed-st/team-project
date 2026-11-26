@@ -13,5 +13,5 @@ public interface AddCardDataAccessInterface {
 
     int generateCardId();
 
-    void saveCard(int deckId, Card card);
+    void saveCard(int deckId, Card card, String actingUsername);
 }
