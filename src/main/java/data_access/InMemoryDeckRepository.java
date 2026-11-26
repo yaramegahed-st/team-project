@@ -9,6 +9,8 @@ import use_case.add_deck.AddDeckDataAccessInterface;
 import use_case.add_deck.AddDeckDataAccessInterfaceException;
 import use_case.edit_deck.EditDeckDataAccessInterface;
 import use_case.edit_deck.EditDeckDataAccessException;
+import use_case.access_deck.DeckPermissionAccess;
+import use_case.access_deck.DeckPermissionException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +22,8 @@ public class InMemoryDeckRepository
     AddCardDataAccessInterface, 
     EditCardDataAccessInterface, 
     AddDeckDataAccessInterface,
-    EditDeckDataAccessInterface
+    EditDeckDataAccessInterface,
+    DeckPermissionAccess
     {
 
     private final Map<Integer, Deck> decks = new HashMap<>();
@@ -87,24 +90,54 @@ public class InMemoryDeckRepository
         return Optional.of(snapshot);
     }
 
-@Override
-public void renameDeck(int deckId, String name, String actingUsername) {
-    Deck stored = decks.get(deckId);
+    @Override
+    public void renameDeck(int deckId, String name, String actingUsername) {
+        Deck stored = decks.get(deckId);
 
-    if (stored == null) {
-        throw new EditDeckDataAccessException(
-                "Deck no longer exists."
-        );
+        if (stored == null) {
+            throw new EditDeckDataAccessException(
+                    "Deck no longer exists."
+            );
+        }
+
+        if (!stored.getOwner().equals(actingUsername)) {
+            throw new EditDeckDataAccessException(
+                    "User is no longer allowed to rename this deck."
+            );
+        }
+
+        stored.rename(name);
     }
 
-    if (!stored.getOwner().equals(actingUsername)) {
-        throw new EditDeckDataAccessException(
-                "User is no longer allowed to rename this deck."
-        );
+    // add a deck permission to allow add card
+    @Override
+    public boolean canEditDeck(int deckId, String username) {
+        if (username == null || username.isBlank()) {
+            return false;
+        }
+
+        Deck deck = decks.get(deckId);
+
+        if (deck == null) {
+            return false;
+        }
+
+        if (username.equals(deck.getOwner())) {
+            return true;
+        }
+
+        return deck.getEditors().stream()
+                .anyMatch(editor ->
+                        username.equals(editor.getUsername()));
     }
 
-    stored.rename(name);
-}
+    private void requireEditPermission(int deckId, String username) {
+        if (!canEditDeck(deckId, username)) {
+            throw new DeckPermissionException(
+                    "You do not have permission to edit this deck."
+            );
+        }
+    }
 
     @Override
     public int generateCardId() {
@@ -134,7 +167,8 @@ public void renameDeck(int deckId, String name, String actingUsername) {
     }
 
     @Override
-    public void updateCard(int deckId,Card updatedCard) {
+    public void updateCard(int deckId,Card updatedCard, String actingUsername) {
+        requireEditPermission(deckId, actingUsername);
         Deck deck = decks.get(deckId);
 
         if (deck == null) {
@@ -156,7 +190,9 @@ public void renameDeck(int deckId, String name, String actingUsername) {
     }
 
     @Override
-    public void saveCard(int deckId, Card card) {
+    public void saveCard(int deckId, Card card, String actingUsername) {
+        // check owner name is on edit list for deck
+        requireEditPermission(deckId, actingUsername);
         Deck deck = decks.get(deckId);
 
         if (deck == null) {
