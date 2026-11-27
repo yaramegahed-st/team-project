@@ -37,6 +37,9 @@ import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
 import interface_adapter.study.StudyViewModel;
+import interface_adapter.add_card.AddCardController;
+import interface_adapter.add_card.AddCardPresenter;
+import interface_adapter.add_card.AddCardViewModel;
 
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
@@ -59,6 +62,10 @@ import use_case.edit_deck.EditDeckInputBoundary;
 import use_case.edit_deck.EditDeckInteractor;
 import use_case.edit_deck.EditDeckOutputBoundary;
 import use_case.session.CurrentUserAccess;
+import use_case.access_deck.DeckPermissionAccess;
+import use_case.access_deck.DeckPermissionException;
+import use_case.add_card.AddCardInputBoundary;
+import use_case.add_card.AddCardInteractor;
 
 import view.AboutPanel;
 import view.AccountsView;
@@ -78,6 +85,7 @@ import view.SignupView;
 import view.SlidingViewManager;
 import view.StudyPanel;
 import view.TemporaryWiring;
+import view.AddCardView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -111,6 +119,7 @@ public class AppBuilder {
     private EditDeckViewModel editDeckViewModel;
     private EditCardView editCardView;
     private EditCardViewModel editCardViewModel;
+    private AddCardView addCardView;
 
     private LoadingPanel loadingPanel;
     private MainPanel mainPanel;
@@ -216,14 +225,16 @@ public class AppBuilder {
     }
 
     public AppBuilder addEditCardFeature() {
+        CurrentUserAccess session = userDataAccessObject::getCurrentUsername;
+
         editCardViewModel = new EditCardViewModel();
 
         EditCardPresenter presenter =
             new EditCardPresenter(editCardViewModel);
 
         EditCardInputBoundary interactor =
-            new EditCardInteractor(deckRepository, presenter);
-
+            new EditCardInteractor(deckRepository, presenter, session, deckRepository);
+        
         EditCardController controller =
             new EditCardController(interactor);
 
@@ -281,6 +292,58 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addCardUseCase() {
+        if (addDeckView == null) {
+            throw new IllegalStateException(
+                    "Call addAddDeckView() before addCardUseCase()."
+            );
+        }
+
+        CurrentUserAccess currentUserAccess =
+                userDataAccessObject::getCurrentUsername;
+
+        AddCardViewModel model = new AddCardViewModel();
+        AddCardPresenter presenter = new AddCardPresenter(model);
+        
+        DeckPermissionAccess deckPermissionAccess = deckRepository;
+
+        AddCardInputBoundary interactor = new AddCardInteractor(
+                deckRepository,
+                presenter,
+                currentUserAccess,
+                deckRepository
+        );
+
+        AddCardController controller = new AddCardController(interactor);
+
+        addCardView = new AddCardView(controller, model);
+
+        viewManager.register(
+                AddCardView.VIEW_NAME,
+                addCardView
+        );
+
+        // For the initial test flow, open the saved card in the editor.
+        model.addPropertyChangeListener(event -> {
+            if (AddCardViewModel.CARD_ADDED.equals(
+                    event.getPropertyName())) {
+                editCardView.openCard(
+                        model.getDeckId(),
+                        model.getCardId(),
+                        model.getQuestion(),
+                        model.getAnswer()
+                );
+
+                viewManagerModel.navigate(
+                        EditCardViewModel.VIEW_NAME,
+                        true
+                );
+            }
+    });
+
+        return this;
+    }
+
     public AppBuilder addAddDeckUseCase() {
         if (addDeckView == null) {
             throw new IllegalStateException(
@@ -303,6 +366,18 @@ public class AppBuilder {
         addDeckView.setAddDeckController(
                 new AddDeckController(interactor)
         );
+
+        addDeckViewModel.addPropertyChangeListener(event -> {
+            if (AddDeckViewModel.DECK_ADDED.equals(
+                event.getPropertyName())) {
+                    addCardView.openDeck(addDeckViewModel.getDeckId());
+
+                    viewManagerModel.navigate(
+                            AddCardView.VIEW_NAME,
+                            true
+                    );
+                }
+            });
 
         return this;
     }

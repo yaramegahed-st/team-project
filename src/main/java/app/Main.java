@@ -30,9 +30,10 @@ public class Main {
                 .addLoginUseCase()
                 .addChangePasswordUseCase()
                 .addLogoutUseCase()
-                .addAddDeckUseCase()
                 .addEditDeckFeature()
                 .addEditCardFeature()
+                .addCardUseCase()
+                .addAddDeckUseCase()
                 
 
                 .build();
