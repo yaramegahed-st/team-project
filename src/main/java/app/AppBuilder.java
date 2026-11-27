@@ -85,6 +85,7 @@ import view.SignupView;
 import view.SlidingViewManager;
 import view.StudyPanel;
 import view.TemporaryWiring;
+import view.AddCardView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -118,6 +119,7 @@ public class AppBuilder {
     private EditDeckViewModel editDeckViewModel;
     private EditCardView editCardView;
     private EditCardViewModel editCardViewModel;
+    private AddCardView addCardView;
 
     private LoadingPanel loadingPanel;
     private MainPanel mainPanel;
@@ -299,21 +301,46 @@ public class AppBuilder {
 
         CurrentUserAccess currentUserAccess =
                 userDataAccessObject::getCurrentUsername;
+
+        AddCardViewModel model = new AddCardViewModel();
+        AddCardPresenter presenter = new AddCardPresenter(model);
         
         DeckPermissionAccess deckPermissionAccess = deckRepository;
 
-        AddCardViewModel addModel = new AddCardViewModel();
-        AddCardPresenter addPresenter = new AddCardPresenter(addModel);
-
-        AddCardInputBoundary addInteractor = new AddCardInteractor(
+        AddCardInputBoundary interactor = new AddCardInteractor(
                 deckRepository,
-                addPresenter,
+                presenter,
                 currentUserAccess,
                 deckRepository
         );
 
-        AddCardController addController = 
-        new AddCardController(addInteractor);
+        AddCardController controller = new AddCardController(interactor);
+
+        addCardView = new AddCardView(controller, model);
+
+        viewManager.register(
+                AddCardView.VIEW_NAME,
+                addCardView
+        );
+
+        // For the initial test flow, open the saved card in the editor.
+        model.addPropertyChangeListener(event -> {
+            if (AddCardViewModel.CARD_ADDED.equals(
+                    event.getPropertyName())) {
+                editCardView.openCard(
+                        model.getDeckId(),
+                        model.getCardId(),
+                        model.getQuestion(),
+                        model.getAnswer()
+                );
+
+                viewManagerModel.navigate(
+                        EditCardViewModel.VIEW_NAME,
+                        true
+                );
+            }
+    });
+
         return this;
     }
 
@@ -339,6 +366,18 @@ public class AppBuilder {
         addDeckView.setAddDeckController(
                 new AddDeckController(interactor)
         );
+
+        addDeckViewModel.addPropertyChangeListener(event -> {
+            if (AddDeckViewModel.DECK_ADDED.equals(
+                event.getPropertyName())) {
+                    addCardView.openDeck(addDeckViewModel.getDeckId());
+
+                    viewManagerModel.navigate(
+                            AddCardView.VIEW_NAME,
+                            true
+                    );
+                }
+            });
 
         return this;
     }

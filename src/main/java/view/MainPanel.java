@@ -7,6 +7,7 @@ import interface_adapter.free_access_decks.FreeAccessViewModel;
 import interface_adapter.home.HomeViewModel;
 import interface_adapter.new_deck.NewDeckViewModel;
 import interface_adapter.settings.SettingsViewModel;
+import interface_adapter.add_deck.AddDeckViewModel;
 import view.components.*;
 import view.style.FontLoader;
 import view.style.IconLoader;
@@ -271,7 +272,7 @@ public class MainPanel extends JPanel {
         JMenuItem newDeck = new JMenuItem("Add new deck");
         newDeck.addActionListener(e -> {
             newDeckViewModel.getState().setOriginView(HomeViewModel.VIEW_NAME);     // so New Deck returns here
-            viewManagerModel.navigate(NewDeckViewModel.VIEW_NAME, true);
+            viewManagerModel.navigate(AddDeckViewModel.VIEW_NAME, true);
         });
         menu.add(newDeck);
 

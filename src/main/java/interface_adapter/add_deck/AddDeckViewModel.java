@@ -23,7 +23,7 @@ public class AddDeckViewModel {
     this.message = message;
     this.error = "";
 
-    support.firePropertyChange("DECK_ADDED", null, deckId);
+    support.firePropertyChange(DECK_ADDED, null, deckId);
   }
 
   public void setError(String error) {
